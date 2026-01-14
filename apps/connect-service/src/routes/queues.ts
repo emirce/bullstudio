@@ -1,15 +1,19 @@
-import type { IQueueService } from "../interfaces";
+import type { ConnectionManager } from "../services/connection.service";
 import type { Route } from "../lib/router";
 import { jsonResponse, errorResponse } from "../lib/response";
 
-export function createQueuesRoutes(queueService: IQueueService): Route[] {
+export function createQueuesRoutes(connectionManager: ConnectionManager): Route[] {
   return [
     {
       method: "GET",
-      path: "/api/queues",
-      handler: async () => {
+      path: "/api/connections/:connectionId/queues",
+      handler: async (_request, params) => {
         try {
-          const queues = await queueService.getQueues();
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          const queues = await service.getQueues();
           return jsonResponse({ queues });
         } catch (error) {
           return errorResponse("Failed to fetch queues", error);
@@ -18,10 +22,14 @@ export function createQueuesRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "GET",
-      path: "/api/queues/:queueName",
+      path: "/api/connections/:connectionId/queues/:queueName",
       handler: async (_request, params) => {
         try {
-          const queue = await queueService.getQueue(params.queueName!);
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          const queue = await service.getQueue(params.queueName!);
 
           if (!queue) {
             return jsonResponse({ error: "Queue not found" }, 404);
@@ -35,10 +43,14 @@ export function createQueuesRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "POST",
-      path: "/api/queues/:queueName/pause",
+      path: "/api/connections/:connectionId/queues/:queueName/pause",
       handler: async (_request, params) => {
         try {
-          await queueService.pauseQueue(params.queueName!);
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          await service.pauseQueue(params.queueName!);
           return jsonResponse({
             success: true,
             message: `Queue ${params.queueName} paused`,
@@ -50,10 +62,14 @@ export function createQueuesRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "POST",
-      path: "/api/queues/:queueName/resume",
+      path: "/api/connections/:connectionId/queues/:queueName/resume",
       handler: async (_request, params) => {
         try {
-          await queueService.resumeQueue(params.queueName!);
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          await service.resumeQueue(params.queueName!);
           return jsonResponse({
             success: true,
             message: `Queue ${params.queueName} resumed`,

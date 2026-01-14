@@ -39,9 +39,7 @@ const magicLinkSchema = z.object({
 });
 
 export const LoginCard = () => {
-  const { formState, handleSubmit, control } = useForm<
-    z.infer<typeof magicLinkSchema>
-  >({
+  const { formState, handleSubmit, control } = useForm({
     resolver: zodResolver(magicLinkSchema),
     defaultValues: {
       email: "",

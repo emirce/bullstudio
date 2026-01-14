@@ -23,3 +23,35 @@ export const DeleteWorkspaceDialog = dynamic(
     ),
   { ssr: false }
 );
+
+export const CreateConnectionDialog = dynamic(
+  () =>
+    import("./connection/CreateConnectionDialog").then(
+      (mod) => mod.CreateConnectionDialog
+    ),
+  { ssr: false }
+);
+
+export const EditConnectionDialog = dynamic(
+  () =>
+    import("./connection/EditConnectionDialog").then(
+      (mod) => mod.EditConnectionDialog
+    ),
+  { ssr: false }
+);
+
+export const DeleteConnectionDialog = dynamic(
+  () =>
+    import("./connection/DeleteConnectionDialog").then(
+      (mod) => mod.DeleteConnectionDialog
+    ),
+  { ssr: false }
+);
+
+export const TestConnectionDialog = dynamic(
+  () =>
+    import("./connection/TestConnectionDialog").then(
+      (mod) => mod.TestConnectionDialog
+    ),
+  { ssr: false }
+);

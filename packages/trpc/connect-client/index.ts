@@ -132,10 +132,7 @@ export class ConnectClient {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      this.config.timeout
-    );
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
     try {
       const response = await fetch(url, {
@@ -209,7 +206,9 @@ export class ConnectClient {
   }
 }
 
-export function createConnectClient(config: ConnectClientConfig): ConnectClient {
+export function createConnectClient(
+  config: ConnectClientConfig
+): ConnectClient {
   return new ConnectClient(config);
 }
 

@@ -1,7 +1,8 @@
-import { BullMqService } from "./services";
+import { ConnectionManager } from "./services";
 import { createAuthMiddleware } from "./middleware";
 import { Router, jsonResponse } from "./lib";
 import {
+  createConnectionsRoutes,
   createHealthRoutes,
   createQueuesRoutes,
   createJobsRoutes,
@@ -9,7 +10,6 @@ import {
 } from "./routes";
 
 const PORT = parseInt(process.env.PORT ?? "3001", 10);
-const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
 const API_KEY = process.env.CONNECT_SERVICE_API_KEY;
 
 if (!API_KEY) {
@@ -19,17 +19,17 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const queueService = new BullMqService({ redisUrl: REDIS_URL });
+const connectionManager = new ConnectionManager();
 const authenticate = createAuthMiddleware({ apiKey: API_KEY });
 
 const router = new Router();
 router.register(createHealthRoutes());
-router.register(createQueuesRoutes(queueService));
-router.register(createJobsRoutes(queueService));
-router.register(createWorkersRoutes(queueService));
+router.register(createConnectionsRoutes(connectionManager));
+router.register(createQueuesRoutes(connectionManager));
+router.register(createJobsRoutes(connectionManager));
+router.register(createWorkersRoutes(connectionManager));
 
-await queueService.connect();
-console.log(`[Connect Service] Connected to Redis at ${REDIS_URL}`);
+console.log(`[Connect Service] Initialized with dynamic connection management`);
 
 const server = Bun.serve({
   port: PORT,
@@ -56,14 +56,14 @@ console.log(`[Connect Service] Server running on port ${PORT}`);
 
 process.on("SIGINT", async () => {
   console.log("\n[Connect Service] Shutting down...");
-  await queueService.disconnect();
+  await connectionManager.disconnectAll();
   server.stop();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
   console.log("\n[Connect Service] Shutting down...");
-  await queueService.disconnect();
+  await connectionManager.disconnectAll();
   server.stop();
   process.exit(0);
 });

@@ -161,7 +161,7 @@ model Workspace {
 model RedisConnection {
   id String @id @default(cuid())
 
-  workspaceId String    @unique
+  workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   // Connection display name

@@ -1,17 +1,22 @@
-import type { IQueueService, IJobQueryOptions, JobStatus } from "../interfaces";
+import type { ConnectionManager } from "../services/connection.service";
+import type { IJobQueryOptions, JobStatus } from "../interfaces";
 import type { Route } from "../lib/router";
 import { jsonResponse, errorResponse } from "../lib/response";
 
-export function createJobsRoutes(queueService: IQueueService): Route[] {
+export function createJobsRoutes(connectionManager: ConnectionManager): Route[] {
   return [
     {
       method: "GET",
-      path: "/api/queues/:queueName/jobs",
+      path: "/api/connections/:connectionId/queues/:queueName/jobs",
       handler: async (request, params) => {
         try {
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
           const url = new URL(request.url);
           const options = parseJobQueryOptions(url.searchParams);
-          const jobs = await queueService.getJobs(params.queueName!, options);
+          const jobs = await service.getJobs(params.queueName!, options);
           return jsonResponse({ jobs, total: jobs.length });
         } catch (error) {
           return errorResponse("Failed to fetch jobs", error);
@@ -20,10 +25,14 @@ export function createJobsRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "GET",
-      path: "/api/queues/:queueName/jobs/:jobId",
+      path: "/api/connections/:connectionId/queues/:queueName/jobs/:jobId",
       handler: async (_request, params) => {
         try {
-          const job = await queueService.getJob(
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          const job = await service.getJob(
             params.queueName!,
             params.jobId!
           );
@@ -40,10 +49,14 @@ export function createJobsRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "POST",
-      path: "/api/queues/:queueName/jobs/:jobId/retry",
+      path: "/api/connections/:connectionId/queues/:queueName/jobs/:jobId/retry",
       handler: async (_request, params) => {
         try {
-          await queueService.retryJob(params.queueName!, params.jobId!);
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          await service.retryJob(params.queueName!, params.jobId!);
           return jsonResponse({
             success: true,
             message: `Job ${params.jobId} retried`,
@@ -55,10 +68,14 @@ export function createJobsRoutes(queueService: IQueueService): Route[] {
     },
     {
       method: "DELETE",
-      path: "/api/queues/:queueName/jobs/:jobId",
+      path: "/api/connections/:connectionId/queues/:queueName/jobs/:jobId",
       handler: async (_request, params) => {
         try {
-          await queueService.removeJob(params.queueName!, params.jobId!);
+          const service = connectionManager.getQueueService(params.connectionId!);
+          if (!service) {
+            return jsonResponse({ error: "Connection not found or not connected" }, 404);
+          }
+          await service.removeJob(params.queueName!, params.jobId!);
           return jsonResponse({
             success: true,
             message: `Job ${params.jobId} removed`,

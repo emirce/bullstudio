@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, ListTodo } from "lucide-react";
+import { Database, LayoutDashboard, ListTodo } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +35,11 @@ export function AppSidebar() {
       title: "Jobs",
       href: workspaceSlug ? `/${workspaceSlug}/jobs` : "/jobs",
       icon: ListTodo,
+    },
+    {
+      title: "Connections",
+      href: workspaceSlug ? `/${workspaceSlug}/connections` : "/connections",
+      icon: Database,
     },
   ];
 

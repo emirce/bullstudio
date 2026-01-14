@@ -20,13 +20,25 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     session: async ({ session, token }) => {
-      session.user = {
-        id: token.id,
-        email: token.email,
-        name: token.name,
-        organizationId: session.user.organizationId ?? token.organizationId,
+      type SessionUser = {
+        id: string;
+        email: string;
+        name?: string | null;
+        organizationId?: string;
+        emailVerified?: Date | null;
+      };
+      const existingUser = session.user as Partial<SessionUser>;
+      (session.user as SessionUser) = {
+        id: (token.id as string) || existingUser.id || "",
+        email: (token.email as string) || existingUser.email || "",
+        name: token.name || existingUser.name,
+        organizationId:
+          existingUser.organizationId ??
+          (token.organizationId as string | undefined),
         emailVerified:
-          session.user.emailVerified ?? token.emailVerified ?? null,
+          existingUser.emailVerified ??
+          (token.emailVerified as Date | null) ??
+          null,
       };
       return session;
     },
