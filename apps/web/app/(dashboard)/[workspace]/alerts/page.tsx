@@ -1,12 +1,12 @@
 import { PageHeader } from "@/components/shell/PageHeader";
-import { JobsContent } from "@/components/jobs";
+import { AlertsContent } from "@/components/alerts";
 
-export default async function WorkspaceJobsPage() {
+export default function AlertsPage() {
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Jobs" />
+      <PageHeader title="Alerts" />
       <main className="flex-1 min-h-0 overflow-auto p-6">
-        <JobsContent />
+        <AlertsContent />
       </main>
     </div>
   );

@@ -195,11 +195,70 @@ model RedisConnection {
   lastHealthCheckAt DateTime?
   lastError         String?
 
+  // Alerts
+  alerts Alert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([workspaceId])
+}
+
+model Alert {
+  id String @id @default(cuid())
+
+  connectionId String
+  connection   RedisConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  queueName   String
+  type        AlertType
+  enabled     Boolean   @default(true)
+
+  // Configuration (stored as JSON)
+  // For FailureRate: { threshold: number, timeWindowMinutes: number, resolveThreshold?: number }
+  // For BacklogExceeded: { threshold: number, resolveThreshold?: number }
+  // For ProcessingTime*: { threshold: number, timeWindowMinutes: number, resolveThreshold?: number }
+  // For MissingWorkers: { gracePeriodMinutes?: number }
+  config Json
+
+  // Notification settings
+  recipients      String[]
+  cooldownMinutes Int      @default(15)
+
+  // Current state
+  status          AlertStatus @default(OK)
+  lastTriggeredAt DateTime?
+  lastResolvedAt  DateTime?
+  lastCheckedAt   DateTime?
+  lastValue       Float?
+
+  // History
+  history AlertHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([connectionId])
+  @@index([status])
+  @@index([enabled])
+}
+
+model AlertHistory {
+  id String @id @default(cuid())
+
+  alertId String
+  alert   Alert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  status  AlertStatus
+  value   Float?
+  message String?
+
+  createdAt DateTime @default(now())
+
+  @@index([alertId])
+  @@index([createdAt])
 }
 
 
@@ -244,4 +303,18 @@ enum RedisConnectionStatus {
 enum DataSourceType {
   ProxyAgent
   DirectRedis
+}
+
+enum AlertType {
+  FailureRate
+  BacklogExceeded
+  ProcessingTimeAvg
+  ProcessingTimeP95
+  ProcessingTimeP99
+  MissingWorkers
+}
+
+enum AlertStatus {
+  OK
+  Triggered
 }

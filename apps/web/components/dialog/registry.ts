@@ -55,3 +55,20 @@ export const TestConnectionDialog = dynamic(
     ),
   { ssr: false }
 );
+
+export const CreateAlertDialog = dynamic(
+  () =>
+    import("./alert/CreateAlertDialog").then((mod) => mod.CreateAlertDialog),
+  { ssr: false }
+);
+
+export const EditAlertDialog = dynamic(
+  () => import("./alert/EditAlertDialog").then((mod) => mod.EditAlertDialog),
+  { ssr: false }
+);
+
+export const DeleteAlertDialog = dynamic(
+  () =>
+    import("./alert/DeleteAlertDialog").then((mod) => mod.DeleteAlertDialog),
+  { ssr: false }
+);

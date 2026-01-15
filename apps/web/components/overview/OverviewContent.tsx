@@ -9,6 +9,7 @@ import { ThroughputChart } from "./charts/ThroughputChart";
 import { ProcessingTimeChart } from "./charts/ProcessingTimeChart";
 import { SlowestJobsTable } from "./tables/SlowestJobsTable";
 import { FailingJobTypesTable } from "./tables/FailingJobTypesTable";
+import { AlertsActivityCard } from "./ActiveAlertsCard";
 import { Skeleton } from "@bullstudio/ui/components/skeleton";
 import { Database } from "lucide-react";
 
@@ -97,6 +98,8 @@ export function OverviewContent() {
         <OverviewSkeleton />
       ) : metrics ? (
         <>
+          <AlertsActivityCard connectionId={connectionId} timeRangeHours={timeRange} />
+
           <MetricCardsGrid
             summary={metrics.summary}
             timeSeries={metrics.timeSeries}
