@@ -8,6 +8,9 @@ import { DialogProvider } from "@/components/dialog/DialogProvider";
 import { Providers } from "@/components/providers/Providers";
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/logo.svg",
+  },
   title: "Bull Studio",
   description: "Bull Studio",
 };

@@ -1,101 +1,76 @@
 ---
 title: "Introduction"
-description: "Set up bullstudio for your queue management"
+description: "Cloud-hosted observability and management dashboard for BullMQ queues"
 ---
 
-## What is bullstudio
-Bullstudio is cloud-hosted analytics and observability tool for redis-based queue systems.
-It allows the inspection of jobs and queue performance over time.
+## What is bullstudio?
 
-## Setting up
+bullstudio is a modern, cloud-hosted observability and management dashboard for [BullMQ](https://docs.bullmq.io/) queues. It provides real-time insights into queue health, job states, throughput, and failures—all without managing infrastructure.
 
-Get your documentation site up and running in minutes.
+<Frame>
+  <img src="/images/dashboard-preview.png" alt="bullstudio dashboard showing queue metrics and analytics" />
+</Frame>
+
+## Key Features
+
+<Columns cols={2}>
+  <Card title="Real-time Monitoring" icon="chart-line">
+    Track throughput, processing times, and failure rates with live-updating metrics and charts.
+  </Card>
+  <Card title="Job Management" icon="list-check">
+    Browse, filter, retry, and remove jobs. View detailed job data, timelines, and stack traces.
+  </Card>
+  <Card title="Smart Alerts" icon="bell">
+    Configure alerts for failure rates, backlogs, processing times, and missing workers.
+  </Card>
+  <Card title="Multi-Environment" icon="layer-group">
+    Organize connections across workspaces for development, staging, and production environments.
+  </Card>
+</Columns>
+
+## Dashboard Overview
+
+The bullstudio dashboard provides comprehensive visibility into your queue operations:
+
+- **Metric Cards**: Total completed jobs, failed jobs, throughput per hour, failure rate, average processing time, and delay
+- **Throughput Chart**: Visualize completed vs failed jobs over time
+- **Processing Time Chart**: Monitor average processing time trends
+- **Slowest Jobs**: Identify performance bottlenecks
+- **Failing Job Types**: Track which job types fail most often
+- **Active Alerts**: See triggered alerts at a glance
+
+## How It Works
+
+bullstudio connects to your Redis instance to read BullMQ queue data. Connect directly to any publicly accessible Redis instance with TLS encryption.
+
+<Card title="Direct Connection" icon="plug" href="/getting-started/connection/direct-connection">
+  Connect to cloud-hosted Redis services like AWS ElastiCache, Redis Cloud, Upstash, and more.
+</Card>
+
+## Getting Started
 
 <Card
-  title="Start here"
+  title="5-Minute Quickstart"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Create your account, set up a workspace, connect to Redis, and start monitoring in minutes.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Explore Features
 
 <Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+  <Card title="Queue Management" icon="bars-staggered" href="/features/queue-management">
+    View queue status, pause and resume processing, monitor job counts.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Job Browser" icon="magnifying-glass" href="/features/job-management">
+    Filter, search, and manage individual jobs with detailed insights.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Alerts" icon="triangle-exclamation" href="/features/alerts">
+    Set up notifications for queue health issues before they impact users.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Integrate bullstudio with your workflows using our REST API.
   </Card>
 </Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>

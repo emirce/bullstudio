@@ -74,6 +74,12 @@ function Navbar() {
               Pricing
             </Link>
             <Link
+              href="https://docs.bullstudio.dev"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
               href="https://github.com/emirce/bullstudio"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
             >

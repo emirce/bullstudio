@@ -15,6 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/logo.svg",
+  },
   title: "bullstudio - Modern Queue Management for BullMQ",
   description:
     "The modern, cloud-hosted observability and management dashboard for Bull and BullMQ queues. Real-time insights, job management, alerts, and metrics for Node.js developers.",
