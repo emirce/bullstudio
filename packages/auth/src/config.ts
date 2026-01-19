@@ -8,6 +8,7 @@ import { MagicLinkEmail, MagicLinkEmailProps } from "@bullstudio/email";
 import GitHub from "next-auth/providers/github";
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
