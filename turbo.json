@@ -1,13 +1,23 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": ["**/.env"],
+  "globalEnv": [
+    "AUTH_SECRET",
+    "RESEND_API_KEY",
+    "AUTH_GOOGLE_ID",
+    "AUTH_GOOGLE_SECRET",
+    "AUTH_GITHUB_ID",
+    "AUTH_GITHUB_SECRET",
+    "DATABASE_URL",
+    "POLAR_ACCESS_TOKEN",
+    "POLAR_WEBHOOK_SECRET"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build", "prisma:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["DIRECT_URL", "NEXT_PUBLIC_APP_URL"]
+      "env": ["DIRECT_URL", "NEXT_PUBLIC_*"]
     },
     "lint": {
       "dependsOn": ["^lint"]

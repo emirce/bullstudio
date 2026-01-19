@@ -20,7 +20,6 @@ export const authConfig: NextAuthConfig = {
     Resend({
       from: "noreply@scheduler.barbell-consulting.com",
       sendVerificationRequest: async ({ identifier, url }) => {
-        console.log("Sending magic link to:", identifier, "with URL:", url);
         const props: MagicLinkEmailProps = {
           magicLink: url,
         };
