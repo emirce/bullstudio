@@ -23,6 +23,9 @@ const validPlans = {
 
 export const POST = Webhooks({
   webhookSecret: process.env.POLAR_WEBHOOK_SECRET!,
+  onPayload: async (payload) => {
+    console.log("[Polar Webhook] Payload received:", payload);
+  },
   onSubscriptionCreated: async (payload) => {
     const customerId = payload.data.customer.id;
     const org = await getOrgByCustomerId(customerId);
@@ -30,7 +33,7 @@ export const POST = Webhooks({
     if (!org) {
       console.warn(
         "[Polar Webhook] No organization found with customer id",
-        customerId
+        customerId,
       );
       return;
     }
@@ -41,7 +44,7 @@ export const POST = Webhooks({
     if (!planInfo) {
       console.warn(
         "[Polar Webhook] Received subscription for invalid plan:",
-        planName
+        planName,
       );
       return;
     }
@@ -65,7 +68,7 @@ export const POST = Webhooks({
     });
 
     console.log(
-      `[Polar Webhook] Subscription created for org ${org.id}: ${planInfo.plan}`
+      `[Polar Webhook] Subscription created for org ${org.id}: ${planInfo.plan}`,
     );
   },
 
@@ -76,7 +79,7 @@ export const POST = Webhooks({
     if (!org) {
       console.warn(
         "[Polar Webhook] No organization found with customer id",
-        customerId
+        customerId,
       );
       return;
     }
@@ -87,7 +90,7 @@ export const POST = Webhooks({
     if (!planInfo) {
       console.warn(
         "[Polar Webhook] Received subscription update for invalid plan:",
-        planName
+        planName,
       );
       return;
     }
@@ -120,7 +123,7 @@ export const POST = Webhooks({
     });
 
     console.log(
-      `[Polar Webhook] Subscription updated for org ${org.id}: ${planInfo.plan}`
+      `[Polar Webhook] Subscription updated for org ${org.id}: ${planInfo.plan}`,
     );
   },
 
@@ -131,7 +134,7 @@ export const POST = Webhooks({
     if (!org) {
       console.warn(
         "[Polar Webhook] No organization found with customer id",
-        customerId
+        customerId,
       );
       return;
     }
@@ -148,7 +151,7 @@ export const POST = Webhooks({
     });
 
     console.log(
-      `[Polar Webhook] Subscription canceled for org ${org.id}, will end at ${payload.data.currentPeriodEnd}`
+      `[Polar Webhook] Subscription canceled for org ${org.id}, will end at ${payload.data.currentPeriodEnd}`,
     );
   },
 
@@ -159,7 +162,7 @@ export const POST = Webhooks({
     if (!org) {
       console.warn(
         "[Polar Webhook] No organization found with customer id",
-        customerId
+        customerId,
       );
       return;
     }
@@ -175,7 +178,7 @@ export const POST = Webhooks({
     });
 
     console.log(
-      `[Polar Webhook] Subscription revoked for org ${org.id}, downgraded to Free`
+      `[Polar Webhook] Subscription revoked for org ${org.id}, downgraded to Free`,
     );
   },
 });

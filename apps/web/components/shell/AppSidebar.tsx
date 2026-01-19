@@ -19,14 +19,13 @@ import {
 import { Logo } from "./Logo";
 import { UserNav } from "./UserNav";
 import { WorkspaceSelector } from "./WorkspaceSelector";
-import path from "path";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { organizationSlug: orgSlug, workspace: workspaceSlug } = useParams();
 
   const getItemUrl = (base: string) => {
-    return `/${orgSlug}/${workspaceSlug}${base}`;
+    return `/${orgSlug}/${workspaceSlug ?? ""}${base}`;
   };
 
   const isActive = (href: string) => {

@@ -15,19 +15,19 @@ import {
   LayoutDashboard,
   LineChart,
   Lock,
+  Mail,
   Play,
   RefreshCw,
   Search,
   Server,
   Shield,
   Sparkles,
-  Terminal,
   Trash2,
-  Users,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { config } from "@/lib/config";
 import Image from "next/image";
 
 export default function LandingPage() {
@@ -74,7 +74,7 @@ function Navbar() {
               Pricing
             </Link>
             <Link
-              href="https://github.com/bullstudio"
+              href="https://github.com/emirce/bullstudio"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
             >
               <Github className="size-4" />
@@ -84,13 +84,13 @@ function Navbar() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/login"
+              href={`${config.appUrl}/login`}
               className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Log in
             </Link>
             <Link
-              href="/signup"
+              href={`${config.appUrl}/signup`}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 transition-all hover:shadow-md"
             >
               Get Started
@@ -140,7 +140,7 @@ function HeroSection() {
           {/* CTAs */}
           <div className="animate-fade-up animate-delay-300 mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/signup"
+              href={`${config.appUrl}/signup`}
               className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:shadow-xl hover:shadow-primary/20 glow-primary"
             >
               Start Free Trial
@@ -407,16 +407,6 @@ REDIS_URL=redis://localhost:6379`,
     },
     {
       step: "02",
-      title: "Install the SDK",
-      description:
-        "Drop in our lightweight SDK alongside your existing BullMQ setup. Zero config changes required.",
-      code: `npm install @bullstudio/sdk
-
-// That's it. We detect your queues automatically.`,
-      icon: <Terminal className="size-5" />,
-    },
-    {
-      step: "03",
       title: "See everything",
       description:
         "Instantly get visibility into all your queues. Real-time metrics, job inspection, and management tools.",
@@ -435,14 +425,14 @@ REDIS_URL=redis://localhost:6379`,
             Integration
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Up and running in <span className="text-gradient">5 minutes</span>
+            Up and running in <span className="text-gradient">2 minutes</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            No agents to deploy. No infrastructure changes. Just plug in and go.
+            No SDK to install. No agents to deploy. Just connect your Redis and go.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {steps.map((step, i) => (
             <div key={i} className="relative">
               {/* Connector line */}
@@ -544,16 +534,17 @@ function DashboardPreview() {
 function PricingSection() {
   const tiers = [
     {
-      name: "Starter",
-      description: "Perfect for side projects and indie hackers",
+      name: "Free",
+      description: "Get started with basic queue monitoring",
       price: "Free",
       priceDetail: "forever",
       features: [
-        "Up to 3 queues",
-        "1 environment",
-        "7-day data retention",
-        "Email alerts",
-        "Community support",
+        "1 Workspace",
+        "1 Connection",
+        "Monitoring",
+        "Job insights",
+        "Analytics",
+        "Basic support",
       ],
       cta: "Get Started",
       ctaVariant: "outline" as const,
@@ -561,17 +552,15 @@ function PricingSection() {
     },
     {
       name: "Pro",
-      description: "For growing teams with production workloads",
-      price: "$29",
+      description: "For growing teams with advanced needs",
+      price: "$39",
       priceDetail: "/month",
       features: [
-        "Unlimited queues",
-        "5 environments",
-        "30-day data retention",
-        "Slack & webhook alerts",
-        "Priority support",
-        "Team collaboration",
-        "Custom dashboards",
+        "5 Workspaces",
+        "5 Connections",
+        "Everything in Free",
+        "Alerts",
+        "Premium support",
       ],
       cta: "Start Free Trial",
       ctaVariant: "primary" as const,
@@ -579,20 +568,15 @@ function PricingSection() {
     },
     {
       name: "Enterprise",
-      description: "For organizations with advanced needs",
-      price: "Custom",
-      priceDetail: "pricing",
+      description: "For large organizations",
+      price: "$99",
+      priceDetail: "/month",
       features: [
+        "10 Workspaces",
+        "10 Connections",
         "Everything in Pro",
-        "Unlimited environments",
-        "90-day data retention",
-        "SSO & SAML",
-        "Audit logs",
-        "Dedicated support",
-        "SLA guarantee",
-        "On-premise option",
       ],
-      cta: "Contact Sales",
+      cta: "Get Started",
       ctaVariant: "outline" as const,
       popular: false,
     },
@@ -657,7 +641,7 @@ function PricingSection() {
               </ul>
 
               <Link
-                href="/signup"
+                href={`${config.appUrl}/signup`}
                 className={cn(
                   "w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all",
                   tier.ctaVariant === "primary"
@@ -712,14 +696,14 @@ function OpenSourceSection() {
 
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href="https://github.com/bullstudio"
+                  href="https://github.com/emirce/bullstudio"
                   className="inline-flex items-center gap-2 rounded-lg bg-card border border-border px-4 py-2.5 text-sm font-medium hover:bg-accent transition-colors"
                 >
                   <Github className="size-5" />
                   View on GitHub
                 </Link>
                 <Link
-                  href="https://github.com/bullstudio/bullstudio/stargazers"
+                  href="https://github.com/emirce/bullstudio/bullstudio/stargazers"
                   className="inline-flex items-center gap-2 rounded-lg border border-border/50 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"
                 >
                   <Sparkles className="size-5 text-yellow-500" />
@@ -750,26 +734,6 @@ function OpenSourceSection() {
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {[
-                  { label: "Stars", value: "2.4k" },
-                  { label: "Forks", value: "180" },
-                  { label: "Contributors", value: "45" },
-                ].map((stat, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl border border-border/50 bg-card/50 p-4 text-center"
-                  >
-                    <div className="text-2xl font-bold text-primary">
-                      {stat.value}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -828,18 +792,18 @@ function CTASection() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/signup"
+                href={`${config.appUrl}/signup`}
                 className="group inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:shadow-xl hover:shadow-primary/20"
               >
                 Get Started Free
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                href="/contact"
+                href={`mailto:${config.supportEmail}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/50 px-8 py-4 text-base font-semibold text-foreground hover:bg-card transition-all"
               >
-                <Users className="size-5" />
-                Talk to Sales
+                <Mail className="size-5" />
+                Contact Support
               </Link>
             </div>
           </div>
@@ -866,13 +830,13 @@ function Footer() {
             </p>
             <div className="flex gap-3">
               <Link
-                href="https://github.com/bullstudio"
+                href="https://github.com/emirce/bullstudio"
                 className="size-9 rounded-lg border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-colors"
               >
                 <Github className="size-4" />
               </Link>
               <Link
-                href="https://twitter.com/bullstudio"
+                href="https://x.com/emirce"
                 className="size-9 rounded-lg border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-colors"
               >
                 <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">
@@ -885,38 +849,82 @@ function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-4">Product</h4>
             <ul className="space-y-3">
-              {["Features", "Pricing", "Changelog", "Roadmap"].map((item) => (
-                <li key={item}>
-                  <Link
-                    href={`/${item.toLowerCase()}`}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link
+                  href="#features"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#pricing"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Pricing
+                </Link>
+              </li>
+              {/* Hidden for now - will be added later */}
+              {/* <li>
+                <Link
+                  href="/changelog"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Changelog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/roadmap"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Roadmap
+                </Link>
+              </li> */}
             </ul>
           </div>
 
           <div>
             <h4 className="text-sm font-semibold mb-4">Resources</h4>
             <ul className="space-y-3">
-              {["Documentation", "API Reference", "Guides", "Blog"].map(
-                (item) => (
-                  <li key={item}>
-                    <Link
-                      href={`/${item.toLowerCase().replace(" ", "-")}`}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                )
-              )}
+              <li>
+                <Link
+                  href="https://docs.bullstudio.dev"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Documentation
+                </Link>
+              </li>
+              {/* Hidden for now - will be added later */}
+              {/* <li>
+                <Link
+                  href="/api-reference"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  API Reference
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guides"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Guides
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Blog
+                </Link>
+              </li> */}
             </ul>
           </div>
 
-          <div>
+          <div className="hidden">
             <h4 className="text-sm font-semibold mb-4">Company</h4>
             <ul className="space-y-3">
               {["About", "Contact", "Privacy", "Terms"].map((item) => (

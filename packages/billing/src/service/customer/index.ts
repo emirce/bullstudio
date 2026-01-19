@@ -61,13 +61,13 @@ export const ensureCustomer = async ({ orgId }: { orgId: string }) => {
   const newCustomer = await polar.customers.create({
     email: orgOwner.user.email,
     name: orgOwner.user.name,
-    organizationId: orgId,
+    //organizationId: orgId,
     metadata: {
       userId: orgOwner.user.id,
     },
   });
 
-  const updatedOrg = await prisma.organization.update({
+  await prisma.organization.update({
     where: { id: orgId },
     data: { polarCustomerId: newCustomer.id },
   });
