@@ -1,12 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalDependencies": ["**/.env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build", "prisma:generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["DIRECT_URL"]
+      "env": ["DIRECT_URL", "NEXT_PUBLIC_APP_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -27,10 +28,12 @@
     },
     "prisma:migrate-dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["DIRECT_URL"]
     },
     "prisma:deploy": {
-      "cache": false
+      "cache": false,
+      "env": ["DIRECT_URL"]
     }
   }
 }

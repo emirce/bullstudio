@@ -1,8 +1,8 @@
 # Install
 pnpm install --frozen-lockfile
 # Prisma
-pnpx prisma migrate deploy --schema ./packages/prisma/schema.prisma
-pnpx prisma generate --schema ./packages/prisma/schema.prisma
+pnpm prisma:deploy -F @bullstudio/prisma
+pnpm prisma:generate -F @bullstudio/prisma
 
 # Build
 pnpm build -F web

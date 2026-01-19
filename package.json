@@ -8,9 +8,9 @@
     "start": "turbo start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "db:generate": "npx prisma generate",
-    "db:migrate": "npx prisma migrate dev --skip-generate",
-    "db:deploy": "npx prisma migrate deploy"
+    "prisma:generate": "turbo run prisma:generate",
+    "prisma:migrate-dev": "turbo run prisma:migrate-dev",
+    "prisma:deploy": "turbo run prisma:deploy"
   },
   "devDependencies": {
     "@bullstudio/eslint-config": "workspace:*",
