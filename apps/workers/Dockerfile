@@ -1,35 +1,43 @@
-# Base image with Bun
-FROM oven/bun:1.2.22 AS base
-
-# Install turbo CLI globally using Bun
-FROM base AS turbo-cli
-RUN bun add -g turbo
+# Base image with Node.js
+FROM node:20-alpine AS base
 
 # Builder stage - prune worker workspace
-FROM turbo-cli AS builder
+FROM base AS builder
 WORKDIR /app
+RUN npm install -g turbo
 COPY . .
-RUN turbo prune workers --docker --out-dir=out/worker
+RUN turbo prune workers --docker --out-dir=out/workers
 
 # Installer stage
 FROM base AS installer
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
+
 # Copy package.json files from worker pruned workspace
-COPY --from=builder /app/out/worker/json/ .
+COPY --from=builder /app/out/workers/json/ .
+
+# Copy lockfile
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy full source from worker pruned workspace
-COPY --from=builder /app/out/worker/full/ .
+COPY --from=builder /app/out/workers/full/ .
 
-# Remove any lockfile that might have been copied
-RUN rm -f bun.lock
-# Generate a fresh lockfile
-RUN bun install
+# Generate Prisma client
+RUN pnpm --filter @bullstudio/prisma prisma generate
 
-FROM installer AS runner
+# Runner stage
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# Copy necessary files from installer
+COPY --from=installer /app ./
 
 # Set the worker directory as working directory
 WORKDIR /app/apps/workers
 ENV NODE_ENV=production
-EXPOSE 3001
-CMD ["bun", "run", "src/index.ts"]
+
+CMD ["pnpm", "start"]
