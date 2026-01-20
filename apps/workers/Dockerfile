@@ -27,11 +27,16 @@ RUN pnpm install --frozen-lockfile
 COPY --from=builder /app/out/workers/full/ .
 
 # Generate Prisma client
-RUN pnpm --filter @bullstudio/prisma prisma generate
+WORKDIR /app/packages/prisma
+RUN npx prisma generate
+WORKDIR /app
 
 # Runner stage
 FROM node:20-alpine AS runner
 WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.28.1 --activate
 
 # Copy necessary files from installer
 COPY --from=installer /app ./
