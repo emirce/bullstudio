@@ -32,7 +32,9 @@ export const authConfig: NextAuthConfig = {
       },
     }),
     Google,
-    GitHub,
+    GitHub({
+      allowDangerousEmailAccountLinking: true,
+    }),
   ],
   callbacks: {
     session: async ({ session, token }) => {
