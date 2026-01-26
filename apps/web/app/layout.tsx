@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.svg",
   },
-  title: "Bull Studio",
-  description: "Bull Studio",
+  title: "bullstudio",
+  description: "Modern queue management for BullMq",
 };
 
 const font = DM_Sans({
