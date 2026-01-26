@@ -4,6 +4,7 @@
   "globalEnv": [
     "AUTH_SECRET",
     "AUTH_URL",
+    "BILLING_ENABLED",
     "RESEND_API_KEY",
     "AUTH_GOOGLE_ID",
     "AUTH_GOOGLE_SECRET",

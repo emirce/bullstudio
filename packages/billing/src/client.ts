@@ -5,14 +5,20 @@ import { BILLING_ENABLED } from "./const";
 let polar: Polar | null = null;
 
 export const getPolarClient = () => {
-  if (polar) return polar;
+  if (polar !== null) return polar;
+
+  const billingEnabled = BILLING_ENABLED();
+
+  if (!billingEnabled) {
+    return null;
+  }
 
   const accessToken = process.env.POLAR_ACCESS_TOKEN;
-  if (!accessToken || !BILLING_ENABLED()) {
+  if (!accessToken) {
     return null;
   }
   polar = new Polar({
-    accessToken: process.env.POLAR_ACCESS_TOKEN!,
+    accessToken,
     server: process.env.NODE_ENV === "development" ? "sandbox" : "production",
   });
   return polar;
