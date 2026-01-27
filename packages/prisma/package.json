@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prisma:generate": "npx prisma generate",
-    "prisma:migrate-dev": "npx prisma migrate dev --skip-generate",
+    "prisma:migrate-dev": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy"
   },
   "keywords": [],
