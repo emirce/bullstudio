@@ -20,8 +20,9 @@
 
 bullstudio is a cloud-hosted dashboard that gives you real-time visibility into your Bull and BullMQ job queues. It's built for backend developers and DevOps teams who need to monitor queue health, debug failed jobs, and get alerted before backlogs become outages. Unlike basic Redis GUIs or self-hosted alternatives, bullstudio offers intelligent alerting, multi-environment support, and a polished UI designed for production workflows.
 
-<!-- TODO: Add screenshot -->
-<!-- ![Dashboard Overview](docs/images/dashboard.png) -->
+<div align="center">
+	<img width="80%" src="https://github.com/user-attachments/assets/63502c4f-06ac-4581-84b4-7b32746d29e2" />
+</div>
 
 ---
 
@@ -65,7 +66,7 @@ bullstudio is a cloud-hosted dashboard that gives you real-time visibility into 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-org/bullstudio.git
+git clone https://github.com/emirce/bullstudio.git
 cd bullstudio
 pnpm install
 ```
@@ -73,16 +74,25 @@ pnpm install
 ### 2. Configure environment
 
 ```bash
-cp .env.example .env.local
+cp .env.example apps/web/.env
+cp .env.example apps/workers/.env
 ```
 
-Edit `.env.local` with your credentials:
+Fill in the following env vars for the web app (apps/web/.env)
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/bullstudio"
-AUTH_SECRET="your-auth-secret"
-AUTH_GOOGLE_ID="..."
-AUTH_GOOGLE_SECRET="..."
+DATABASE_URL=...
+ENCRYPTION_KEY=...
+AUTH_URL=...
+AUTH_SECRET=....
+```
+
+And the following ones for the workers app (apps/workers.env)
+
+```env
+DATABASE_URL=...
+RESEND_API_KEY=...
+DATABASE_URL=...
 ```
 
 ### 3. Setup database
@@ -92,10 +102,10 @@ pnpm prisma:generate
 pnpm prisma:migrate-dev
 ```
 
-### 4. Run development server
+### 4. Run development workers and web
 
 ```bash
-pnpm dev
+pnpm dev -F web -F workers
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your first workspace.
