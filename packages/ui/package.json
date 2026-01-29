@@ -7,6 +7,10 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0"
   },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -44,9 +48,7 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.475.0",
     "next-themes": "^0.4.6",
-    "react": "^19.1.1",
     "react-day-picker": "^9.13.0",
-    "react-dom": "^19.1.1",
     "react-hook-form": "^7.71.1",
     "react-resizable-panels": "^4.4.1",
     "recharts": "2.15.4",
@@ -72,6 +74,7 @@
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.ts",
+    "./shared": "./src/shared/index.ts"
   }
 }

@@ -1,12 +1,9 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../styles.css?url";
 
@@ -19,13 +16,13 @@ import {
   SidebarProvider,
 } from "@bullstudio/ui/components/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
+import { Toaster } from "sonner";
 
 import "@bullstudio/ui/globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 interface MyRouterContext {
   queryClient: QueryClient;
-
   trpc: TRPCOptionsProxy<TRPCRouter>;
 }
 
@@ -40,7 +37,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "bullstudio",
+        title: "bullstudio CLI",
       },
     ],
     links: [
@@ -48,37 +45,41 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: "stylesheet",
         href: appCss,
       },
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/logo.svg",
+      },
     ],
   }),
 
-  shellComponent: RootDocument,
+  component: RootComponent,
 });
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <Outlet />
+    </RootDocument>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased font-sans">
         <ThemeProvider defaultTheme="dark">
           <SidebarProvider>
             <AppSidebar />
-            <SidebarInset className="overflow-y-auto">{children}</SidebarInset>
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-              ]}
-            />
+            <SidebarInset className="overflow-y-auto">
+              <main className="flex-1 p-6">{children}</main>
+            </SidebarInset>
             <Scripts />
           </SidebarProvider>
+          <Toaster theme="dark" position="bottom-right" richColors />
         </ThemeProvider>
       </body>
     </html>

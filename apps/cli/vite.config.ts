@@ -8,7 +8,6 @@ import tailwindcss from "@tailwindcss/vite";
 const config = defineConfig({
   plugins: [
     devtools(),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
@@ -18,6 +17,23 @@ const config = defineConfig({
   ],
   resolve: {
     dedupe: ["react", "react-dom"],
+  },
+  ssr: {
+    // These packages will be bundled instead of externalized
+    noExternal: ["@bullstudio/ui", /^@radix-ui\//],
+    // External packages for SSR - use native require
+    external: ["react", "react-dom"],
+    // Allow CJS modules in SSR
+    optimizeDeps: {
+      include: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+    },
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+    esbuildOptions: {
+      // Handle CommonJS modules
+      format: "esm",
+    },
   },
 });
 

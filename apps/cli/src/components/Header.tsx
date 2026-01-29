@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { SidebarTrigger } from "@bullstudio/ui/components/sidebar";
+import { Separator } from "@bullstudio/ui/components/separator";
 
-export default function Header({ title }: { title?: string }) {
+interface HeaderProps {
+  title?: string;
+  children?: React.ReactNode;
+}
+
+export default function Header({ title, children }: HeaderProps) {
   return (
-    <>
-      <header className="p-4 h-16 flex items-center bg-gray-800 text-white shadow-lg">
-        <h1 className="ml-4 text-lg font-semibold">{title}</h1>
-      </header>
-    </>
+    <header className="flex h-14 shrink-0 items-center gap-2">
+      <div className="flex items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        {title && (
+          <h1 className="text-lg font-semibold text-zinc-100">{title}</h1>
+        )}
+      </div>
+      {children && <div className="ml-auto pr-4">{children}</div>}
+    </header>
   );
 }

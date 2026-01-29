@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, ListTodo } from "lucide-react";
+import { LayoutDashboard, ListTodo, Github, Database } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,14 +11,25 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarFooter,
 } from "@bullstudio/ui/components/sidebar";
-
 import { Link, useLocation } from "@tanstack/react-router";
+import { useTRPC } from "@/integrations/trpc/react";
+import { useQuery } from "@tanstack/react-query";
 
 export function AppSidebar() {
-  const { pathname } = { pathname: "test" };
+  const location = useLocation();
+  const pathname = location.pathname;
+  const trpc = useTRPC();
+
+  const { data: connectionInfo } = useQuery(
+    trpc.connection.info.queryOptions()
+  );
 
   const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
     return pathname.startsWith(href);
   };
 
@@ -38,8 +49,22 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       {/* Header with Logo */}
-      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border">
-        bullstudio
+      <SidebarHeader className="h-16 justify-center border-b border-sidebar-border px-4">
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.svg"
+            alt="bullstudio"
+            className="size-8 shrink-0"
+          />
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span className="font-semibold text-sm text-zinc-100">
+              bullstudio
+            </span>
+            <span className="text-[10px] text-zinc-500 uppercase tracking-wider">
+              CLI
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
@@ -69,7 +94,41 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Redis Connection Info */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <div className="px-3 py-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-0">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 group-data-[collapsible=icon]:justify-center">
+                <Database className="size-3.5 shrink-0 text-emerald-500" />
+                <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                  <span className="text-zinc-400 font-medium">Redis</span>
+                  <span className="text-zinc-500 font-mono text-[11px]">
+                    {connectionInfo?.displayUrl || "connecting..."}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+
+      {/* Footer */}
+      <SidebarFooter className="border-t border-sidebar-border p-4">
+        <div className="flex items-center justify-between text-xs text-zinc-500 group-data-[collapsible=icon]:justify-center">
+          <span className="group-data-[collapsible=icon]:hidden">
+            v0.0.1
+          </span>
+          <a
+            href="https://github.com/your-repo/bullstudio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-zinc-300 transition-colors"
+          >
+            <Github className="size-4" />
+          </a>
+        </div>
+      </SidebarFooter>
 
       {/* Rail for resizing */}
       <SidebarRail />

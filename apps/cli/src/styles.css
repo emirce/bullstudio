@@ -1,4 +1,21 @@
 @import "tailwindcss";
+
+/* DM Sans Variable Font - Local */
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 1000;
+  font-style: italic;
+  font-display: swap;
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -23,7 +40,7 @@
   --border: oklch(0.9022 0.0052 247.8822);
   --input: oklch(0.9700 0.0029 264.5420);
   --ring: oklch(0.6397 0.1720 36.4421);
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --radius: 0.75rem;
 }

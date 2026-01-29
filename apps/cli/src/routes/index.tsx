@@ -1,112 +1,186 @@
-import { Button } from "@bullstudio/ui/components/button";
+import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useTRPC } from "@/integrations/trpc/react";
+import { useQuery } from "@tanstack/react-query";
+import Header from "@/components/Header";
 import {
-  Zap,
-  Server,
-  Route as RouteIcon,
-  Shield,
-  Waves,
-  Sparkles,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@bullstudio/ui/components/select";
+import { Button } from "@bullstudio/ui/components/button";
+import { Skeleton } from "@bullstudio/ui/components/skeleton";
+import { RefreshCw, Layers, Database } from "lucide-react";
+import { EmptyState } from "@bullstudio/ui/shared";
+import { MetricCardsGrid } from "@/components/overview/MetricCardsGrid";
+import { ThroughputChart } from "@/components/overview/ThroughputChart";
+import { ProcessingTimeChart } from "@/components/overview/ProcessingTimeChart";
+import { SlowestJobsTable } from "@/components/overview/SlowestJobsTable";
+import { FailingJobTypesTable } from "@/components/overview/FailingJobTypesTable";
+import dayjs from "@bullstudio/dayjs";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({ component: OverviewPage });
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: "Powerful Server Functions",
-      description:
-        "Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.",
-    },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: "Flexible Server Side Rendering",
-      description:
-        "Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.",
-    },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: "API Routes",
-      description:
-        "Build type-safe API endpoints alongside your application. No separate backend needed.",
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: "Strongly Typed Everything",
-      description:
-        "End-to-end type safety from server to client. Catch errors before they reach production.",
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: "Full Streaming Support",
-      description:
-        "Stream data from server to client progressively. Perfect for AI applications and real-time updates.",
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: "Next Generation Ready",
-      description:
-        "Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.",
-    },
-  ];
+const TIME_RANGES = [
+  { value: "1", label: "Last 1h" },
+  { value: "6", label: "Last 6h" },
+  { value: "24", label: "Last 24h" },
+  { value: "72", label: "Last 3d" },
+  { value: "168", label: "Last 7d" },
+];
+
+const ALL_QUEUES_VALUE = "__all__";
+
+function OverviewPage() {
+  const trpc = useTRPC();
+  const [queueName, setQueueName] = useState<string>("");
+  const [timeRange, setTimeRange] = useState<number>(24);
+
+  const { data: queues, isLoading: loadingQueues } = useQuery(
+    trpc.queues.list.queryOptions()
+  );
+
+  const {
+    data: metrics,
+    isLoading: loadingMetrics,
+    refetch,
+    isFetching,
+  } = useQuery(
+    trpc.overview.metrics.queryOptions({
+      timeRangeHours: timeRange,
+      queueName: queueName || undefined,
+    })
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{" "}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <Button>Test</Button>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{" "}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="space-y-6">
+      <Header title="Overview" />
 
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+      {/* Header Controls */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            value={queueName || ALL_QUEUES_VALUE}
+            onValueChange={(value) =>
+              setQueueName(value === ALL_QUEUES_VALUE ? "" : value)
+            }
+            disabled={loadingQueues}
+          >
+            <SelectTrigger className="w-[200px] bg-zinc-900/50 border-zinc-800">
+              <Layers className="size-4 mr-2 text-zinc-500" />
+              <SelectValue placeholder="Select queue" />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              <SelectItem value={ALL_QUEUES_VALUE} className="text-zinc-100">
+                All queues
+              </SelectItem>
+              {queues?.map((queue) => (
+                <SelectItem
+                  key={queue.name}
+                  value={queue.name}
+                  className="text-zinc-100 font-mono"
+                >
+                  {queue.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={String(timeRange)}
+            onValueChange={(value) => setTimeRange(Number(value))}
+          >
+            <SelectTrigger className="w-[130px] bg-zinc-900/50 border-zinc-800">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-zinc-800">
+              {TIME_RANGES.map((range) => (
+                <SelectItem
+                  key={range.value}
+                  value={range.value}
+                  className="text-zinc-100"
+                >
+                  {range.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </section>
+
+        <div className="flex items-center gap-3">
+          {metrics?.lastUpdated && (
+            <span className="text-xs text-zinc-500">
+              Updated {dayjs(metrics.lastUpdated).fromNow()}
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800"
+          >
+            <RefreshCw
+              className={`size-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      {loadingMetrics ? (
+        <OverviewSkeleton />
+      ) : queues && queues.length === 0 ? (
+        <EmptyState
+          icon={<Database className="size-12" />}
+          title="No queues found"
+          description="No BullMQ queues were found in the connected Redis instance. Make sure you have queues set up."
+        />
+      ) : metrics ? (
+        <>
+          <MetricCardsGrid
+            summary={metrics.summary}
+            timeSeries={metrics.timeSeries}
+            timeRange={timeRange}
+          />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ThroughputChart data={metrics.timeSeries} timeRange={timeRange} />
+            <ProcessingTimeChart
+              data={metrics.timeSeries}
+              timeRange={timeRange}
+            />
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SlowestJobsTable jobs={metrics.slowestJobs} />
+            <FailingJobTypesTable jobTypes={metrics.failingJobTypes} />
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function OverviewSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-32 w-full bg-zinc-800/50" />
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-80 w-full bg-zinc-800/50" />
+        <Skeleton className="h-80 w-full bg-zinc-800/50" />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-96 w-full bg-zinc-800/50" />
+        <Skeleton className="h-96 w-full bg-zinc-800/50" />
+      </div>
     </div>
   );
 }
