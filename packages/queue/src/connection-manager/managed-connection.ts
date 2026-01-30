@@ -1,4 +1,3 @@
-import { RedisConnectionStatus } from "@bullstudio/prisma";
 import type {
   QueueService,
   QueueServiceEventCallbacks,
@@ -220,7 +219,6 @@ export class ManagedConnection {
       id: this.config.id,
       workspaceId: this.config.workspaceId,
       state: this._state,
-      dbStatus: this.mapStateToDbStatus(),
       error: this._lastError,
       lastConnectedAt: this._lastConnectedAt,
       lastHealthCheckAt: new Date(),
@@ -229,17 +227,5 @@ export class ManagedConnection {
     };
   }
 
-  private mapStateToDbStatus(): RedisConnectionStatus {
-    switch (this._state) {
-      case "connected":
-        return RedisConnectionStatus.Connected;
-      case "connecting":
-      case "reconnecting":
-        return RedisConnectionStatus.Pending;
-      case "disconnected":
-        return RedisConnectionStatus.Disconnected;
-      case "error":
-        return RedisConnectionStatus.Failed;
-    }
-  }
+
 }

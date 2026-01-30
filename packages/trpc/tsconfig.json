@@ -1,8 +1,0 @@
-{
-    "extends": "@bullstudio/typescript-config/react-library.json",
-    "include": [".", "../auth/src/types.d.ts"],
-    "exclude": ["node_modules", "dist"],
-    "compilerOptions": {
-        "strict": true,
-    }
-}

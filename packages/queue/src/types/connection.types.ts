@@ -1,4 +1,3 @@
-import type { RedisConnectionStatus } from "@bullstudio/prisma";
 
 /**
  * Configuration for establishing a Redis connection.
@@ -34,7 +33,6 @@ export interface ConnectionStatus {
   id: string;
   workspaceId: string;
   state: ConnectionState;
-  dbStatus: RedisConnectionStatus;
   error?: string;
   lastConnectedAt?: Date;
   lastHealthCheckAt?: Date;
