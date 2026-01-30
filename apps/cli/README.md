@@ -29,7 +29,7 @@
 npx bullstudio -r <redis_url>
 ```
 
-That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000).
+That's it! The dashboard opens automatically at [http://localhost:4000](http://localhost:4000). No code integration needed.
 
 ---
 
