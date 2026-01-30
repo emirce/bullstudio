@@ -1,26 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "AUTH_SECRET",
-    "AUTH_URL",
-    "BILLING_ENABLED",
-    "RESEND_API_KEY",
-    "AUTH_GOOGLE_ID",
-    "AUTH_GOOGLE_SECRET",
-    "AUTH_GITHUB_ID",
-    "AUTH_GITHUB_SECRET",
-    "DATABASE_URL",
-    "ENCRYPTION_KEY",
-    "POLAR_ACCESS_TOKEN",
-    "POLAR_WEBHOOK_SECRET"
-  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["DIRECT_URL", "NEXT_PUBLIC_*"]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -29,25 +14,12 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
-      "dependsOn": ["^prisma:generate"],
+      "dependsOn": ["^dev"],
       "cache": false,
       "persistent": true
     },
     "start": {
       "cache": false
-    },
-    "prisma:generate": {
-      "cache": false,
-      "env": ["DIRECT_URL"]
-    },
-    "prisma:migrate-dev": {
-      "cache": false,
-      "persistent": true,
-      "env": ["DIRECT_URL"]
-    },
-    "prisma:deploy": {
-      "cache": false,
-      "env": ["DIRECT_URL"]
     }
   }
 }

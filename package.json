@@ -7,10 +7,7 @@
     "dev": "turbo dev",
     "start": "turbo start",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prisma:generate": "turbo run prisma:generate",
-    "prisma:migrate-dev": "turbo run prisma:migrate-dev",
-    "prisma:deploy": "turbo run prisma:deploy"
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
     "@bullstudio/eslint-config": "workspace:*",

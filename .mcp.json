@@ -4,14 +4,6 @@
       "command": "npx",
       "args": ["shadcn@latest", "mcp"]
     },
-    "Polar": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp.polar.sh/mcp/polar-mcp"]
-    },
-    "Polar Sandbox": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://mcp.polar.sh/mcp/polar-sandbox"]
-    },
     "BullMq docs": {
       "command": "npx",
       "args": ["mcp-remote", "https://docs.bullmq.io/~gitbook/mcp"]
