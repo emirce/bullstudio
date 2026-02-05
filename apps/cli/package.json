@@ -40,6 +40,10 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
+    "@bullstudio/connect-types": "workspace:*",
+    "@bullstudio/dayjs": "workspace:*",
+    "@bullstudio/queue": "workspace:*",
+    "@bullstudio/ui": "workspace:*",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.66.5",

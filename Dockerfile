@@ -5,20 +5,10 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable pnpm
 WORKDIR /app
 
-# Prepare stage -> prune monorepo for bullstudio package
-FROM base AS prepare
-RUN pnpm add -g turbo
-COPY . .
-RUN turbo prune bullstudio --docker
-
 # BUILDER STAGE
 FROM base AS builder
-# Install dependencies
-COPY --from=prepare /app/out/json/ .
-RUN pnpm install --frozen-lockfile
-# Copy source code and pruned files
-COPY --from=prepare /app/out/full/ .
-# Build the bullstudio package
+COPY . .
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm --filter bullstudio build
 
 # RUNNER STAGE
@@ -38,4 +28,3 @@ EXPOSE ${PORT}
 ENV PORT=${PORT}
 
 CMD ["node", "./apps/cli/dist/server/production.js"]
-
