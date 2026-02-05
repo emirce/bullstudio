@@ -8,6 +8,7 @@ import type {
 } from "../../types";
 import type {
   Job,
+  JobSummary,
   Queue as IQueue,
   JobCounts,
   JobQueryOptions,
@@ -106,7 +107,7 @@ export class BullMqProvider implements QueueService {
 
   async disconnect(): Promise<void> {
     const closePromises = Array.from(this.queues.values()).map((queue) =>
-      queue.close()
+      queue.close(),
     );
     await Promise.all(closePromises);
     this.queues.clear();
@@ -126,7 +127,7 @@ export class BullMqProvider implements QueueService {
   async getQueues(): Promise<IQueue[]> {
     const queueNames = await this.discoverQueues();
     const queues = await Promise.all(
-      queueNames.map((name) => this.getQueue(name))
+      queueNames.map((name) => this.getQueue(name)),
     );
     return queues.filter((q): q is IQueue => q !== null);
   }
@@ -155,7 +156,7 @@ export class BullMqProvider implements QueueService {
       "delayed",
       "paused",
       "prioritized",
-      "waiting-children"
+      "waiting-children",
     );
 
     return {
@@ -187,9 +188,9 @@ export class BullMqProvider implements QueueService {
     const statuses = this.resolveStatuses(filter?.status);
     const jobs = await queue.getJobs(statuses, offset, offset + limit - 1);
 
-    let mappedJobs = await Promise.all(jobs
+    let mappedJobs = jobs
       .filter((job): job is BullJob => job !== undefined)
-      .map(async (job) => this.mapJob(job, await job.getState(), queueName)));
+      .map((job) => this.mapJob(job, this.mapJobState(job), queueName));
 
     if (filter?.name) {
       mappedJobs = mappedJobs.filter((job) => job.name === filter.name);
@@ -197,6 +198,31 @@ export class BullMqProvider implements QueueService {
 
     if (sort) {
       mappedJobs = this.sortJobs(mappedJobs, sort.field, sort.order);
+    }
+
+    return mappedJobs;
+  }
+
+  async getJobsSummary(
+    queueName: string,
+    options?: JobQueryOptions,
+  ): Promise<JobSummary[]> {
+    const queue = this.getOrCreateQueue(queueName);
+    const { filter, sort, limit = 100, offset = 0 } = options ?? {};
+
+    const statuses = this.resolveStatuses(filter?.status);
+    const jobs = await queue.getJobs(statuses, offset, offset + limit - 1);
+
+    let mappedJobs = jobs
+      .filter((job): job is BullJob => job !== undefined)
+      .map((job) => this.mapJobSummary(job, this.mapJobState(job), queueName));
+
+    if (filter?.name) {
+      mappedJobs = mappedJobs.filter((job) => job.name === filter.name);
+    }
+
+    if (sort) {
+      mappedJobs = this.sortJobSummaries(mappedJobs, sort.field, sort.order);
     }
 
     return mappedJobs;
@@ -280,7 +306,7 @@ export class BullMqProvider implements QueueService {
   }
 
   private resolveStatuses(
-    status?: JobStatus | JobStatus[]
+    status?: JobStatus | JobStatus[],
   ): (
     | "waiting"
     | "active"
@@ -340,6 +366,36 @@ export class BullMqProvider implements QueueService {
     };
   }
 
+  private mapJobSummary(
+    job: BullJob,
+    state: string,
+    queueName: string,
+  ): JobSummary {
+    const dataStr = job.data ? JSON.stringify(job.data) : "";
+    return {
+      id: job.id ?? "",
+      name: job.name,
+      queueName,
+      status: state as JobStatus,
+      progress: this.normalizeProgress(job.progress),
+      attemptsMade: job.attemptsMade,
+      attemptsLimit: job.opts?.attempts ?? 1,
+      timestamp: job.timestamp,
+      processedOn: job.processedOn,
+      finishedOn: job.finishedOn,
+      delay: job.opts?.delay,
+      priority: job.opts?.priority,
+      parentId: job.parentKey?.split(":").pop(),
+      repeatJobKey: job.repeatJobKey,
+      hasData: !!job.data,
+      dataSize: dataStr.length,
+      hasReturnValue: job.returnvalue !== undefined && job.returnvalue !== null,
+      hasStacktrace: Array.isArray(job.stacktrace) && job.stacktrace.length > 0,
+      hasFailedReason: !!job.failedReason,
+      failedReason: job.failedReason,
+    };
+  }
+
   private mapJobState(job: BullJob): JobStatus {
     if (job.finishedOn && job.failedReason) {
       return "failed";
@@ -357,7 +413,7 @@ export class BullMqProvider implements QueueService {
   }
 
   private normalizeProgress(
-    progress: number | string | object | boolean
+    progress: number | string | object | boolean,
   ): number | object {
     if (typeof progress === "boolean") {
       return progress ? 100 : 0;
@@ -372,8 +428,29 @@ export class BullMqProvider implements QueueService {
   private sortJobs(
     jobs: Job[],
     field: "timestamp" | "processedOn" | "finishedOn" | "progress",
-    order: "asc" | "desc"
+    order: "asc" | "desc",
   ): Job[] {
+    return [...jobs].sort((a, b) => {
+      let aValue: number;
+      let bValue: number;
+
+      if (field === "progress") {
+        aValue = typeof a.progress === "number" ? a.progress : 0;
+        bValue = typeof b.progress === "number" ? b.progress : 0;
+      } else {
+        aValue = a[field] ?? 0;
+        bValue = b[field] ?? 0;
+      }
+
+      return order === "asc" ? aValue - bValue : bValue - aValue;
+    });
+  }
+
+  private sortJobSummaries(
+    jobs: JobSummary[],
+    field: "timestamp" | "processedOn" | "finishedOn" | "progress",
+    order: "asc" | "desc",
+  ): JobSummary[] {
     return [...jobs].sort((a, b) => {
       let aValue: number;
       let bValue: number;

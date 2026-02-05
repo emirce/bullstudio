@@ -2,7 +2,7 @@ import { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../init";
 import { getQueueProvider } from "../connection";
-import type { Job } from "@bullstudio/connect-types";
+import type { JobSummary } from "@bullstudio/connect-types";
 
 export type TimeSeriesDataPoint = {
   timestamp: number;
@@ -46,7 +46,7 @@ export type OverviewMetricsResponse = {
 };
 
 function aggregateMetrics(
-  jobs: Job[],
+  jobs: JobSummary[],
   timeRangeHours: number,
   queuesCount: number
 ): OverviewMetricsResponse {
@@ -97,10 +97,10 @@ function aggregateMetrics(
 }
 
 function buildTimeSeries(
-  jobs: Job[],
+  jobs: JobSummary[],
   timeRangeHours: number
 ): TimeSeriesDataPoint[] {
-  const hourlyBuckets = new Map<number, Job[]>();
+  const hourlyBuckets = new Map<number, JobSummary[]>();
   const now = Date.now();
 
   for (let i = 0; i < timeRangeHours; i++) {
@@ -155,7 +155,7 @@ function buildTimeSeries(
     .sort((a, b) => a.timestamp - b.timestamp);
 }
 
-function buildSlowestJobs(jobs: Job[]): SlowJob[] {
+function buildSlowestJobs(jobs: JobSummary[]): SlowJob[] {
   return jobs
     .map((job) => ({
       id: job.id,
@@ -169,8 +169,8 @@ function buildSlowestJobs(jobs: Job[]): SlowJob[] {
     .slice(0, 10);
 }
 
-function buildFailingJobTypes(failedJobs: Job[]): FailingJobType[] {
-  const grouped = new Map<string, Job[]>();
+function buildFailingJobTypes(failedJobs: JobSummary[]): FailingJobType[] {
+  const grouped = new Map<string, JobSummary[]>();
 
   for (const job of failedJobs) {
     const key = `${job.queueName}:${job.name}`;
@@ -218,15 +218,15 @@ export const overviewRouter = {
         ? allQueues.filter((q) => q.name === input.queueName)
         : allQueues;
 
-      const allJobs: Job[] = [];
+      const allJobs: JobSummary[] = [];
 
       for (const queue of queuesToProcess) {
         const [completed, failed] = await Promise.all([
-          provider.getJobs(queue.name, {
+          provider.getJobsSummary(queue.name, {
             filter: { status: "completed" },
             limit: 1000,
           }),
-          provider.getJobs(queue.name, {
+          provider.getJobsSummary(queue.name, {
             filter: { status: "failed" },
             limit: 1000,
           }),

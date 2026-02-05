@@ -46,3 +46,33 @@ export interface JobQueryOptions {
   limit?: number;
   offset?: number;
 }
+
+/**
+ * Lightweight job summary for list views.
+ * Excludes heavy payload fields (data, returnValue, stacktrace, failedReason)
+ * to improve performance when displaying large job lists.
+ */
+export interface JobSummary {
+  id: string;
+  name: string;
+  queueName: string;
+  status: JobStatus;
+  progress: number | object;
+  attemptsMade: number;
+  attemptsLimit: number;
+  timestamp: number;
+  processedOn?: number;
+  finishedOn?: number;
+  delay?: number;
+  priority?: number;
+  parentId?: string;
+  repeatJobKey?: string;
+  // Size hints for UI indicators
+  hasData: boolean;
+  dataSize?: number;
+  hasReturnValue: boolean;
+  hasStacktrace: boolean;
+  hasFailedReason: boolean;
+  // Included for failed job tracking in overview metrics
+  failedReason?: string;
+}

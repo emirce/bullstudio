@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../init";
 import { getQueueProvider } from "../connection";
-import type { Job } from "@bullstudio/connect-types";
+import type { Job, JobSummary } from "@bullstudio/connect-types";
 
 const jobStatusSchema = z.enum([
   "waiting",
@@ -38,6 +38,39 @@ export const jobRouter = {
       const allJobs: Job[] = [];
       for (const queue of queuesToFetch) {
         const jobs = await provider.getJobs(queue.name, {
+          filter: input?.status ? { status: input.status } : undefined,
+          limit: input?.limit ?? 100,
+          offset: input?.offset ?? 0,
+        });
+        allJobs.push(...jobs);
+      }
+
+      // Sort by timestamp descending
+      return allJobs.sort((a, b) => b.timestamp - a.timestamp);
+    }),
+
+  listSummary: publicProcedure
+    .input(
+      z
+        .object({
+          queueName: z.string().optional(),
+          status: jobStatusSchema.optional(),
+          limit: z.number().min(1).max(1000).default(100),
+          offset: z.number().min(0).default(0),
+        })
+        .optional()
+    )
+    .query(async ({ input }): Promise<JobSummary[]> => {
+      const provider = await getQueueProvider();
+      const queues = await provider.getQueues();
+
+      const queuesToFetch = input?.queueName
+        ? queues.filter((q) => q.name === input.queueName)
+        : queues;
+
+      const allJobs: JobSummary[] = [];
+      for (const queue of queuesToFetch) {
+        const jobs = await provider.getJobsSummary(queue.name, {
           filter: input?.status ? { status: input.status } : undefined,
           limit: input?.limit ?? 100,
           offset: input?.offset ?? 0,

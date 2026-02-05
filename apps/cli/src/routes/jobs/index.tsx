@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTRPC } from "@/integrations/trpc/react";
 import { useQuery } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import dayjs from "@bullstudio/dayjs";
 import { JobStatusBadge, type JobStatus, EmptyState } from "@bullstudio/ui/shared";
-import type { Job } from "@bullstudio/connect-types";
+import type { JobSummary } from "@bullstudio/connect-types";
 
 export const Route = createFileRoute("/jobs/")({ component: JobsPage });
 
@@ -59,6 +59,18 @@ const STATUS_TABS: { value: FilterableStatus | "all"; label: string }[] = [
 ];
 
 const ALL_QUEUES_VALUE = "__all__";
+const SEARCH_DEBOUNCE_MS = 300;
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 function JobsPage() {
   const trpc = useTRPC();
@@ -69,6 +81,7 @@ function JobsPage() {
     "all"
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
   const [sortField, setSortField] = useState<SortField>("timestamp");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -77,13 +90,13 @@ function JobsPage() {
     trpc.queues.list.queryOptions()
   );
 
-  // Fetch jobs
+  // Fetch jobs (using summary endpoint for better performance)
   const {
     data: jobs,
     isLoading: loadingJobs,
     refetch: refetchJobs,
   } = useQuery(
-    trpc.jobs.list.queryOptions({
+    trpc.jobs.listSummary.queryOptions({
       queueName: queueName || undefined,
       status: statusFilter !== "all" ? statusFilter : undefined,
       limit: 500,
@@ -94,17 +107,11 @@ function JobsPage() {
   const filteredAndSortedJobs = useMemo(() => {
     let filtered = jobs ?? [];
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Search filter (searches only summary fields - no payload data)
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter((job) => {
-        const searchableFields = [
-          job.name,
-          job.id,
-          job.failedReason,
-          JSON.stringify(job.data),
-          JSON.stringify(job.returnValue),
-        ];
+        const searchableFields = [job.name, job.id, job.queueName];
         return searchableFields.some(
           (field) => field && String(field).toLowerCase().includes(query)
         );
@@ -159,7 +166,7 @@ function JobsPage() {
         ? (aVal as number) - (bVal as number)
         : (bVal as number) - (aVal as number);
     });
-  }, [jobs, searchQuery, sortField, sortOrder]);
+  }, [jobs, debouncedSearchQuery, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -181,7 +188,7 @@ function JobsPage() {
     );
   };
 
-  const formatDuration = (job: Job) => {
+  const formatDuration = (job: JobSummary) => {
     if (job.finishedOn) {
       const ms = job.finishedOn - (job.processedOn ?? job.timestamp);
       if (ms < 1000) return `${ms}ms`;

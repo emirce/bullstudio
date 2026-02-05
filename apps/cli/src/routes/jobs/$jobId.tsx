@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo, memo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTRPC } from "@/integrations/trpc/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -363,12 +364,52 @@ function MetadataCard({
   );
 }
 
-function JsonViewer({ data }: { data: unknown }) {
-  const formatted = JSON.stringify(data, null, 2);
+const TRUNCATION_THRESHOLD = 50 * 1024; // 50KB
+
+const JsonViewer = memo(function JsonViewer({ data }: { data: unknown }) {
+  const [showFull, setShowFull] = useState(false);
+
+  const { formatted, isTruncated, fullSize } = useMemo(() => {
+    const full = JSON.stringify(data, null, 2);
+    const size = full.length;
+    const shouldTruncate = size > TRUNCATION_THRESHOLD && !showFull;
+
+    return {
+      formatted: shouldTruncate ? full.slice(0, TRUNCATION_THRESHOLD) : full,
+      isTruncated: shouldTruncate,
+      fullSize: size,
+    };
+  }, [data, showFull]);
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   return (
-    <pre className="text-sm text-zinc-300 font-mono bg-zinc-900 p-4 rounded-lg overflow-x-auto">
-      {formatted}
-    </pre>
+    <div>
+      <pre className="text-sm text-zinc-300 font-mono bg-zinc-900 p-4 rounded-lg overflow-x-auto max-h-[600px] overflow-y-auto">
+        {formatted}
+        {isTruncated && (
+          <span className="text-zinc-500">
+            {"\n\n... (truncated)"}
+          </span>
+        )}
+      </pre>
+      {(isTruncated || showFull) && fullSize > TRUNCATION_THRESHOLD && (
+        <div className="mt-2 flex items-center gap-3">
+          <span className="text-xs text-zinc-500">
+            Size: {formatSize(fullSize)}
+          </span>
+          <button
+            onClick={() => setShowFull(!showFull)}
+            className="text-xs text-blue-400 hover:text-blue-300 underline"
+          >
+            {showFull ? "Show less" : "Show full data"}
+          </button>
+        </div>
+      )}
+    </div>
   );
-}
+});
