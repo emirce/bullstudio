@@ -1,4 +1,5 @@
-import { Queue, Job as BullJob, JobType } from "bullmq";
+import Bull from "bull";
+import type { Job as BullJob } from "bull";
 import Redis from "ioredis";
 import type {
   QueueService,
@@ -7,7 +8,6 @@ import type {
   QueueServiceEventCallbacks,
   QueueProviderCapabilities,
 } from "../../types";
-import { getProviderCapabilities } from "../../types";
 import type {
   Job,
   JobSummary,
@@ -18,16 +18,25 @@ import type {
   WorkerCount,
 } from "@bullstudio/connect-types";
 import { NotConnectedError, JobNotFoundError } from "../../errors";
+import { getProviderCapabilities } from "../../types";
 
 const DEFAULT_PREFIX = "bull";
 
-export class BullMqProvider implements QueueService {
-  readonly providerType: QueueProviderType = "bullmq";
+// Bull-specific job states (no prioritized, no waiting-children, no paused per-job)
+type BullJobStatus =
+  | "waiting"
+  | "active"
+  | "completed"
+  | "failed"
+  | "delayed";
+
+export class BullProvider implements QueueService {
+  readonly providerType: QueueProviderType = "bull";
 
   private readonly config: QueueServiceConfig;
   private readonly eventCallbacks: QueueServiceEventCallbacks;
   private connection: Redis | null = null;
-  private queues = new Map<string, Queue>();
+  private queues = new Map<string, Bull.Queue>();
   private _isConnected = false;
   private _isReconnecting = false;
 
@@ -40,7 +49,7 @@ export class BullMqProvider implements QueueService {
   }
 
   getCapabilities(): QueueProviderCapabilities {
-    return getProviderCapabilities("bullmq");
+    return getProviderCapabilities("bull");
   }
 
   async connect(): Promise<void> {
@@ -78,7 +87,7 @@ export class BullMqProvider implements QueueService {
 
     // Handle errors - this prevents unhandled error events
     this.connection.on("error", (error: Error) => {
-      console.error("[BullMqProvider] Redis error:", error.message);
+      console.error("[BullProvider] Redis error:", error.message);
       if (this._isConnected && !this._isReconnecting) {
         this._isConnected = false;
         this.eventCallbacks.onError?.(error);
@@ -87,7 +96,7 @@ export class BullMqProvider implements QueueService {
 
     // Handle connection close
     this.connection.on("close", () => {
-      console.log("[BullMqProvider] Redis connection closed");
+      console.log("[BullProvider] Redis connection closed");
       if (this._isConnected && !this._isReconnecting) {
         this._isConnected = false;
         this.eventCallbacks.onDisconnect?.("Connection closed");
@@ -96,7 +105,7 @@ export class BullMqProvider implements QueueService {
 
     // Handle end (connection fully terminated)
     this.connection.on("end", () => {
-      console.log("[BullMqProvider] Redis connection ended");
+      console.log("[BullProvider] Redis connection ended");
       if (this._isConnected) {
         this._isConnected = false;
         this.eventCallbacks.onDisconnect?.("Connection ended");
@@ -105,14 +114,14 @@ export class BullMqProvider implements QueueService {
 
     // Handle reconnecting (ioredis internal reconnection)
     this.connection.on("reconnecting", () => {
-      console.log("[BullMqProvider] Redis reconnecting...");
+      console.log("[BullProvider] Redis reconnecting...");
       this._isReconnecting = true;
       this.eventCallbacks.onReconnecting?.();
     });
 
     // Handle ready (reconnected)
     this.connection.on("ready", () => {
-      console.log("[BullMqProvider] Redis ready");
+      console.log("[BullProvider] Redis ready");
       if (this._isReconnecting) {
         this._isReconnecting = false;
         this._isConnected = true;
@@ -123,7 +132,7 @@ export class BullMqProvider implements QueueService {
 
   async disconnect(): Promise<void> {
     const closePromises = Array.from(this.queues.values()).map((queue) =>
-      queue.close(),
+      queue.close()
     );
     await Promise.all(closePromises);
     this.queues.clear();
@@ -143,7 +152,7 @@ export class BullMqProvider implements QueueService {
   async getQueues(): Promise<IQueue[]> {
     const queueNames = await this.discoverQueues();
     const queues = await Promise.all(
-      queueNames.map((name) => this.getQueue(name)),
+      queueNames.map((name) => this.getQueue(name))
     );
     return queues.filter((q): q is IQueue => q !== null);
   }
@@ -164,16 +173,9 @@ export class BullMqProvider implements QueueService {
 
   async getJobCounts(queueName: string): Promise<JobCounts> {
     const queue = this.getOrCreateQueue(queueName);
-    const counts = await queue.getJobCounts(
-      "waiting",
-      "active",
-      "completed",
-      "failed",
-      "delayed",
-      "paused",
-      "prioritized",
-      "waiting-children",
-    );
+    const counts = await queue.getJobCounts();
+    // Bull's JobCounts only has: active, completed, failed, delayed, waiting
+    // Paused jobs are in the 'waiting' count but queue itself can be paused
 
     return {
       waiting: counts.waiting ?? 0,
@@ -181,9 +183,10 @@ export class BullMqProvider implements QueueService {
       completed: counts.completed ?? 0,
       failed: counts.failed ?? 0,
       delayed: counts.delayed ?? 0,
-      paused: counts.paused ?? 0,
-      prioritized: counts.prioritized ?? 0,
-      waitingChildren: counts["waiting-children"] ?? 0,
+      paused: 0, // Bull doesn't track paused separately
+      // Bull doesn't support these states
+      prioritized: 0,
+      waitingChildren: 0,
     };
   }
 
@@ -202,11 +205,13 @@ export class BullMqProvider implements QueueService {
     const { filter, sort, limit = 100, offset = 0 } = options ?? {};
 
     const statuses = this.resolveStatuses(filter?.status);
+
+    // Bull's getJobs can accept an array of states
     const jobs = await queue.getJobs(statuses, offset, offset + limit - 1);
 
     let mappedJobs = jobs
-      .filter((job): job is BullJob => job !== undefined)
-      .map((job) => this.mapJob(job, this.mapJobState(job), queueName));
+      .filter((job): job is BullJob => job !== null && job !== undefined)
+      .map((job) => this.mapJob(job, queueName));
 
     if (filter?.name) {
       mappedJobs = mappedJobs.filter((job) => job.name === filter.name);
@@ -216,142 +221,32 @@ export class BullMqProvider implements QueueService {
       mappedJobs = this.sortJobs(mappedJobs, sort.field, sort.order);
     }
 
-    return mappedJobs;
-  }
-
-  // https://github.com/taskforcesh/bullmq/blob/master/src/classes/queue-getters.ts#L456
-  private sanitizeJobTypes(types: JobType[] | JobType | undefined): JobType[] {
-    const currentTypes = typeof types === "string" ? [types] : types;
-
-    if (Array.isArray(currentTypes) && currentTypes.length > 0) {
-      const sanitizedTypes = [...currentTypes];
-
-      if (sanitizedTypes.indexOf("waiting") !== -1) {
-        sanitizedTypes.push("paused");
-      }
-
-      return [...new Set(sanitizedTypes)];
-    }
-
-    return [
-      "active",
-      "completed",
-      "delayed",
-      "failed",
-      "paused",
-      "prioritized",
-      "waiting",
-      "waiting-children",
-    ];
-  }
-
-  private async getJobMetaFromKey(
-    queue: Queue,
-    jobId: string,
-    jobKey: string,
-  ): Promise<JobSummary | null> {
-    const client = await queue.client;
-    const [
-      name,
-      timestamp,
-      progress,
-      attemptsMade,
-      processedOn,
-      finishedOn,
-      failedReason,
-      delay,
-      priority,
-      parent,
-    ] = await client.hmget(
-      jobKey,
-      "name",
-      "timestamp",
-      "progress",
-      "attemptsMade",
-      "processedOn",
-      "finishedOn",
-      "failedReason",
-      "delay",
-      "priority",
-      "parent",
-    );
-
-    const jobStatus = await queue.getJobState(jobId);
-
-    // Check if job has parent
-    let parentId: string | undefined;
-    if (parent) {
-      const parentData = JSON.parse(parent);
-      parentId = parentData.id;
-    }
-
-    return {
-      id: jobId,
-      name: name || "",
-      queueName: queue.name,
-      status: jobStatus as JobStatus,
-      timestamp: timestamp ? parseInt(timestamp, 10) : 0,
-      progress: progress ? this.normalizeProgress(progress) : 0,
-      attemptsMade: attemptsMade ? parseInt(attemptsMade, 10) : 0,
-      processedOn: processedOn ? parseInt(processedOn, 10) : undefined,
-      finishedOn: finishedOn ? parseInt(finishedOn, 10) : undefined,
-      failedReason: failedReason || undefined,
-      delay: delay ? parseInt(delay, 10) : undefined,
-      priority: priority ? parseInt(priority, 10) : undefined,
-      parentId: parentId,
-    };
-  }
-
-  // Works similar to queue.getJobs but skips fetching the full job objects and instead retrieves only the metadata needed for summaries directly from Redis hashes. This is much faster and lighter when we only need summary info for many jobs.
-  private async getJobsTrimmed(
-    queue: Queue,
-    types?: JobType[],
-    start: number = 0,
-    end: number = -1,
-    asc: boolean = false,
-  ) {
-    const sanitizedTypes = this.sanitizeJobTypes(types);
-    const jobIds = await queue.getRanges(sanitizedTypes, start, end, asc);
-
-    const promises = jobIds.map(async (id) => {
-      const jobKey = queue.toKey(id);
-      const meta = await this.getJobMetaFromKey(queue, id, jobKey);
-      return meta;
-    });
-
-    const jobs = await Promise.all(promises);
-
-    const filtered = jobs.filter((job): job is JobSummary => job !== null);
-
-    return filtered;
+    return mappedJobs.slice(0, limit);
   }
 
   async getJobsSummary(
     queueName: string,
-    options?: JobQueryOptions,
+    options?: JobQueryOptions
   ): Promise<JobSummary[]> {
-    const queue = this.getOrCreateQueue(queueName);
-    const { filter, sort, limit = 100, offset = 0 } = options ?? {};
-
-    const statuses = this.resolveStatuses(filter?.status);
-
-    const jobs = await this.getJobsTrimmed(
-      queue,
-      statuses,
-      offset,
-      offset + limit - 1,
-    );
-
-    let mappedJobs = jobs;
-    if (filter?.name) {
-      mappedJobs = mappedJobs.filter((job) => job.name === filter.name);
-    }
-
-    if (sort) {
-      mappedJobs = this.sortJobSummaries(mappedJobs, sort.field, sort.order);
-    }
-
-    return mappedJobs;
+    // Bull doesn't have an efficient metadata-only fetch like BullMQ
+    // Fall back to full job fetching and map to summary
+    const jobs = await this.getJobs(queueName, options);
+    return jobs.map((job) => ({
+      id: job.id,
+      name: job.name,
+      queueName: job.queueName,
+      status: job.status,
+      progress: job.progress,
+      attemptsMade: job.attemptsMade,
+      timestamp: job.timestamp,
+      processedOn: job.processedOn,
+      finishedOn: job.finishedOn,
+      delay: job.delay,
+      priority: job.priority,
+      parentId: undefined, // Bull doesn't support parent-child
+      repeatJobKey: job.repeatJobKey,
+      failedReason: job.failedReason,
+    }));
   }
 
   async getJob(queueName: string, jobId: string): Promise<Job | null> {
@@ -361,8 +256,7 @@ export class BullMqProvider implements QueueService {
       return null;
     }
 
-    const state = await job.getState();
-    return this.mapJob(job, state, queueName);
+    return this.mapJob(job, queueName);
   }
 
   async retryJob(queueName: string, jobId: string): Promise<void> {
@@ -397,14 +291,26 @@ export class BullMqProvider implements QueueService {
     };
   }
 
-  private getOrCreateQueue(name: string): Queue {
+  private getOrCreateQueue(name: string): Bull.Queue {
     let queue = this.queues.get(name);
     if (!queue) {
       if (!this.connection) {
         throw new NotConnectedError();
       }
-      queue = new Queue(name, {
-        connection: this.connection,
+
+      // Bull uses createClient for connection reuse
+      queue = new Bull(name, {
+        createClient: (type) => {
+          // Reuse existing connection for client type
+          // Create new connections for subscriber and bclient (blocking client)
+          if (type === "client") {
+            return this.connection!.duplicate();
+          }
+          return new Redis(this.config.redisUrl, {
+            maxRetriesPerRequest: null,
+            enableReadyCheck: true,
+          });
+        },
         prefix: this.config.prefix,
       });
       this.queues.set(name, queue);
@@ -418,7 +324,8 @@ export class BullMqProvider implements QueueService {
     }
 
     const prefix = this.config.prefix ?? DEFAULT_PREFIX;
-    const pattern = `${prefix}:*:meta`;
+    // Bull stores job ID counter in bull:queueName:id
+    const pattern = `${prefix}:*:id`;
     const keys = await this.connection.keys(pattern);
 
     const queueNames = keys
@@ -432,121 +339,84 @@ export class BullMqProvider implements QueueService {
   }
 
   private resolveStatuses(
-    status?: JobStatus | JobStatus[],
-  ): (
-    | "waiting"
-    | "active"
-    | "completed"
-    | "failed"
-    | "delayed"
-    | "paused"
-    | "prioritized"
-    | "waiting-children"
-  )[] {
+    status?: JobStatus | JobStatus[]
+  ): BullJobStatus[] {
     if (!status) {
-      return [
-        "waiting",
-        "active",
-        "completed",
-        "failed",
-        "delayed",
-        "paused",
-        "prioritized",
-        "waiting-children",
-      ];
+      return ["waiting", "active", "completed", "failed", "delayed"];
     }
 
     const statuses = Array.isArray(status) ? status : [status];
-    return statuses as (
-      | "waiting"
-      | "active"
-      | "completed"
-      | "failed"
-      | "delayed"
-      | "paused"
-      | "prioritized"
-      | "waiting-children"
-    )[];
+    // Filter out unsupported statuses (prioritized, waiting-children, paused)
+    return statuses.filter((s): s is BullJobStatus =>
+      ["waiting", "active", "completed", "failed", "delayed"].includes(s)
+    );
   }
 
-  private mapJob(job: BullJob, state: string, queueName: string): Job {
+  private mapJob(job: BullJob, queueName: string): Job {
+    const state = this.getJobState(job);
+    const progress = job.progress();
+
     return {
-      id: job.id ?? "",
+      id: String(job.id),
       name: job.name,
       queueName,
       data: job.data,
-      status: state as JobStatus,
-      progress: this.normalizeProgress(job.progress),
+      status: state,
+      progress: this.normalizeProgress(progress),
       attemptsMade: job.attemptsMade,
-      attemptsLimit: job.opts?.attempts ?? 1,
+      attemptsLimit: job.opts.attempts ?? 1,
       failedReason: job.failedReason,
       stacktrace: job.stacktrace,
       returnValue: job.returnvalue,
       timestamp: job.timestamp,
       processedOn: job.processedOn,
       finishedOn: job.finishedOn,
-      delay: job.opts?.delay,
-      priority: job.opts?.priority,
-      parentId: job.parentKey?.split(":").pop(),
-      repeatJobKey: job.repeatJobKey,
+      delay: job.opts.delay,
+      priority: job.opts.priority,
+      parentId: undefined, // Bull doesn't support parent-child
+      repeatJobKey: job.opts.repeat ? job.id?.toString() : undefined,
     };
   }
 
-  private mapJobState(job: BullJob): JobStatus {
-    if (job.finishedOn && job.failedReason) {
-      return "failed";
-    }
+  private getJobState(job: BullJob): JobStatus {
+    // Check finished states first
     if (job.finishedOn) {
+      if (job.failedReason) {
+        return "failed";
+      }
       return "completed";
     }
+
+    // Check if processing
     if (job.processedOn) {
       return "active";
     }
-    if (job.opts?.delay && job.timestamp + job.opts.delay > Date.now()) {
+
+    // Check if delayed
+    if (job.opts.delay && job.timestamp + job.opts.delay > Date.now()) {
       return "delayed";
     }
+
     return "waiting";
   }
 
   private normalizeProgress(
-    progress: number | string | object | boolean,
+    progress: number | object
   ): number | object {
-    if (typeof progress === "boolean") {
-      return progress ? 100 : 0;
+    if (typeof progress === "number") {
+      return progress;
     }
-    if (typeof progress === "string") {
-      const parsed = parseFloat(progress);
-      return isNaN(parsed) ? { value: progress } : parsed;
+    if (typeof progress === "object" && progress !== null) {
+      return progress;
     }
-    return progress;
+    return 0;
   }
 
   private sortJobs(
     jobs: Job[],
     field: "timestamp" | "processedOn" | "finishedOn" | "progress",
-    order: "asc" | "desc",
+    order: "asc" | "desc"
   ): Job[] {
-    return [...jobs].sort((a, b) => {
-      let aValue: number;
-      let bValue: number;
-
-      if (field === "progress") {
-        aValue = typeof a.progress === "number" ? a.progress : 0;
-        bValue = typeof b.progress === "number" ? b.progress : 0;
-      } else {
-        aValue = a[field] ?? 0;
-        bValue = b[field] ?? 0;
-      }
-
-      return order === "asc" ? aValue - bValue : bValue - aValue;
-    });
-  }
-
-  private sortJobSummaries(
-    jobs: JobSummary[],
-    field: "timestamp" | "processedOn" | "finishedOn" | "progress",
-    order: "asc" | "desc",
-  ): JobSummary[] {
     return [...jobs].sort((a, b) => {
       let aValue: number;
       let bValue: number;

@@ -6,6 +6,7 @@ import type {
   JobQueryOptions,
   WorkerCount,
 } from "@bullstudio/connect-types";
+import type { QueueProviderCapabilities } from "./provider-capabilities.types";
 
 /**
  * Provider type identifier for extensibility.
@@ -67,4 +68,7 @@ export interface QueueService {
 
   // Worker operations
   getWorkerCount(queueName: string): Promise<WorkerCount>;
+
+  // Provider capabilities
+  getCapabilities(): QueueProviderCapabilities;
 }

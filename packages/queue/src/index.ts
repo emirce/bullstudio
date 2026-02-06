@@ -19,7 +19,13 @@ export {
   ConnectionManager,
   type ConnectionManagerConfig,
 } from "./connection-manager";
-export { BullMqProvider } from "./providers";
+export { BullMqProvider, BullProvider } from "./providers";
+
+// Factory
+export { createQueueProvider, createProviderByType } from "./providers/provider-factory";
+
+// Detection
+export { detectProvider, type ProviderDetectionResult } from "./detection";
 
 // Errors
 export * from "./errors";

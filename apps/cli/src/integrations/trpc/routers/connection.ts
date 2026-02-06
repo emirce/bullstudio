@@ -1,4 +1,5 @@
 import { createTRPCRouter, publicProcedure } from "../init";
+import { getQueueProvider } from "../connection";
 
 function getRedisUrl(): string {
   return process.env.REDIS_URL || "redis://localhost:6379";
@@ -24,9 +25,11 @@ function parseRedisUrl(url: string) {
 }
 
 export const connectionRouter = createTRPCRouter({
-  info: publicProcedure.query(() => {
+  info: publicProcedure.query(async () => {
     const redisUrl = getRedisUrl();
     const parsed = parseRedisUrl(redisUrl);
+    const provider = await getQueueProvider();
+    const capabilities = provider.getCapabilities();
 
     return {
       host: parsed.host,
@@ -35,6 +38,12 @@ export const connectionRouter = createTRPCRouter({
       database: parsed.database,
       // Don't expose full URL with password
       displayUrl: `${parsed.host}:${parsed.port}`,
+      // Provider info
+      providerType: capabilities.providerType,
+      capabilities: {
+        supportsFlows: capabilities.supportsFlows,
+        supportedStatuses: capabilities.supportedJobStates,
+      },
     };
   }),
 });

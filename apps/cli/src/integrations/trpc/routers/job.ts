@@ -1,4 +1,4 @@
-import { TRPCRouterRecord } from "@trpc/server";
+import { type TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../init";
@@ -25,7 +25,7 @@ export const jobRouter = {
           limit: z.number().min(1).max(1000).default(100),
           offset: z.number().min(0).default(0),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input }): Promise<Job[]> => {
       const provider = await getQueueProvider();
@@ -58,7 +58,7 @@ export const jobRouter = {
           limit: z.number().min(1).max(1000).default(100),
           offset: z.number().min(0).default(0),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input }): Promise<JobSummary[]> => {
       const provider = await getQueueProvider();

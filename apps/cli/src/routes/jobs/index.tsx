@@ -49,7 +49,7 @@ type FilterableStatus =
   | "paused"
   | "waiting-children";
 
-const STATUS_TABS: { value: FilterableStatus | "all"; label: string }[] = [
+const BASE_STATUS_TABS: { value: FilterableStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "waiting", label: "Waiting" },
   { value: "active", label: "Active" },
@@ -84,6 +84,23 @@ function JobsPage() {
   const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
   const [sortField, setSortField] = useState<SortField>("timestamp");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+  // Fetch connection info for capabilities
+  const { data: connectionInfo } = useQuery(
+    trpc.connection.info.queryOptions()
+  );
+
+  // Build status tabs based on provider capabilities
+  const statusTabs = useMemo(() => {
+    // If provider supports flows (BullMQ), add waiting-children tab
+    if (connectionInfo?.capabilities?.supportsFlows) {
+      return [
+        ...BASE_STATUS_TABS,
+        { value: "waiting-children" as FilterableStatus, label: "Waiting Children" },
+      ];
+    }
+    return BASE_STATUS_TABS;
+  }, [connectionInfo?.capabilities?.supportsFlows]);
 
   // Fetch queues
   const { data: queues, isLoading: loadingQueues } = useQuery(
@@ -282,7 +299,7 @@ function JobsPage() {
         onValueChange={(v) => setStatusFilter(v as FilterableStatus | "all")}
       >
         <TabsList className="bg-zinc-900 border border-zinc-800">
-          {STATUS_TABS.map((tab) => (
+          {statusTabs.map((tab) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}

@@ -1,7 +1,7 @@
 {
   "name": "bullstudio",
   "version": "0.1.5",
-  "description": "A lightweight queue management dashboard for BullMQ",
+  "description": "A lightweight queue management dashboard for Bull and BullMQ",
   "private": false,
   "type": "module",
   "bin": {
@@ -37,7 +37,8 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "generate:bull-jobs": "npx tsx scripts/generate-bull-jobs.ts"
   },
   "dependencies": {
     "@bullstudio/connect-types": "workspace:*",
@@ -77,6 +78,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
+    "bull": "^4.16.4",
     "@tanstack/devtools-vite": "^0.3.11",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",

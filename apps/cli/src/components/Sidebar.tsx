@@ -34,7 +34,8 @@ export function AppSidebar() {
     return pathname.startsWith(href);
   };
 
-  const navItems = [
+  // Build navigation items based on provider capabilities
+  const baseNavItems = [
     {
       title: "Overview",
       href: "/",
@@ -45,12 +46,19 @@ export function AppSidebar() {
       href: "/jobs",
       icon: ListTodo,
     },
-    {
-      title: "Flows",
-      href: "/flows",
-      icon: Workflow,
-    },
   ];
+
+  // Only show Flows for providers that support it (BullMQ)
+  const navItems = connectionInfo?.capabilities?.supportsFlows
+    ? [
+        ...baseNavItems,
+        {
+          title: "Flows",
+          href: "/flows",
+          icon: Workflow,
+        },
+      ]
+    : baseNavItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -108,9 +116,16 @@ export function AppSidebar() {
               <div className="flex items-center gap-2 text-xs text-zinc-500 group-data-[collapsible=icon]:justify-center">
                 <Database className="size-3.5 shrink-0 text-emerald-500" />
                 <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                  <span className="text-zinc-400 font-medium">Redis</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400 font-medium">Redis</span>
+                    {connectionInfo?.providerType && (
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 uppercase">
+                        {connectionInfo.providerType}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-zinc-500 font-mono text-[11px]">
-                    {connectionInfo?.displayUrl || "connecting..."} 
+                    {connectionInfo?.displayUrl || "connecting..."}
                   </span>
                 </div>
               </div>

@@ -13,3 +13,6 @@ export type {
   QueueServiceEventCallbacks,
   QueueService,
 } from "./queue-service.types";
+
+export type { QueueProviderCapabilities } from "./provider-capabilities.types";
+export { getProviderCapabilities } from "./provider-capabilities.types";

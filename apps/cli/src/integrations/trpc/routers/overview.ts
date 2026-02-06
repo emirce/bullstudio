@@ -1,4 +1,4 @@
-import { TRPCRouterRecord } from "@trpc/server";
+import { type TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../init";
 import { getQueueProvider } from "../connection";
@@ -48,19 +48,19 @@ export type OverviewMetricsResponse = {
 function aggregateMetrics(
   jobs: JobSummary[],
   timeRangeHours: number,
-  queuesCount: number
+  queuesCount: number,
 ): OverviewMetricsResponse {
   const completedJobs = jobs.filter((j) => j.status === "completed");
   const failedJobs = jobs.filter((j) => j.status === "failed");
 
   const jobsWithProcessingTime = jobs.filter(
-    (j) => j.processedOn && j.finishedOn
+    (j) => j.processedOn && j.finishedOn,
   );
   const avgProcessingTimeMs =
     jobsWithProcessingTime.length > 0
       ? jobsWithProcessingTime.reduce(
           (sum, j) => sum + (j.finishedOn! - j.processedOn!),
-          0
+          0,
         ) / jobsWithProcessingTime.length
       : 0;
 
@@ -69,7 +69,7 @@ function aggregateMetrics(
     jobsWithDelay.length > 0
       ? jobsWithDelay.reduce(
           (sum, j) => sum + (j.processedOn! - j.timestamp - (j.delay || 0)),
-          0
+          0,
         ) / jobsWithDelay.length
       : 0;
 
@@ -98,7 +98,7 @@ function aggregateMetrics(
 
 function buildTimeSeries(
   jobs: JobSummary[],
-  timeRangeHours: number
+  timeRangeHours: number,
 ): TimeSeriesDataPoint[] {
   const hourlyBuckets = new Map<number, JobSummary[]>();
   const now = Date.now();
@@ -122,7 +122,7 @@ function buildTimeSeries(
   return Array.from(hourlyBuckets.entries())
     .map(([timestamp, bucketJobs]) => {
       const completed = bucketJobs.filter(
-        (j) => j.status === "completed"
+        (j) => j.status === "completed",
       ).length;
       const failed = bucketJobs.filter((j) => j.status === "failed").length;
       const withTimes = bucketJobs.filter((j) => j.processedOn && j.finishedOn);
@@ -136,7 +136,7 @@ function buildTimeSeries(
           withTimes.length > 0
             ? withTimes.reduce(
                 (s, j) => s + (j.finishedOn! - j.processedOn!),
-                0
+                0,
               ) / withTimes.length
             : 0,
         avgDelayMs:
@@ -144,10 +144,9 @@ function buildTimeSeries(
             ? Math.max(
                 0,
                 withDelay.reduce(
-                  (s, j) =>
-                    s + (j.processedOn! - j.timestamp - (j.delay || 0)),
-                  0
-                ) / withDelay.length
+                  (s, j) => s + (j.processedOn! - j.timestamp - (j.delay || 0)),
+                  0,
+                ) / withDelay.length,
               )
             : 0,
       };
@@ -184,7 +183,7 @@ function buildFailingJobTypes(failedJobs: JobSummary[]): FailingJobType[] {
       const queueName = parts[0] ?? "";
       const name = parts.slice(1).join(":");
       const sorted = jobs.sort(
-        (a, b) => (b.finishedOn || 0) - (a.finishedOn || 0)
+        (a, b) => (b.finishedOn || 0) - (a.finishedOn || 0),
       );
       const latest = sorted[0];
 
@@ -206,7 +205,7 @@ export const overviewRouter = {
       z.object({
         queueName: z.string().optional(),
         timeRangeHours: z.number().min(1).max(168).default(24),
-      })
+      }),
     )
     .query(async ({ input }): Promise<OverviewMetricsResponse> => {
       const provider = await getQueueProvider();
@@ -234,18 +233,18 @@ export const overviewRouter = {
 
         allJobs.push(
           ...completed.filter(
-            (j) => j.finishedOn && j.finishedOn >= cutoffTimestamp
+            (j) => j.finishedOn && j.finishedOn >= cutoffTimestamp,
           ),
           ...failed.filter(
-            (j) => j.finishedOn && j.finishedOn >= cutoffTimestamp
-          )
+            (j) => j.finishedOn && j.finishedOn >= cutoffTimestamp,
+          ),
         );
       }
 
       return aggregateMetrics(
         allJobs,
         input.timeRangeHours,
-        queuesToProcess.length
+        queuesToProcess.length,
       );
     }),
 } satisfies TRPCRouterRecord;

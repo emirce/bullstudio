@@ -1,4 +1,4 @@
-import { TRPCRouterRecord } from "@trpc/server";
+import { type TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../init";
 import { getQueueProvider } from "../connection";
