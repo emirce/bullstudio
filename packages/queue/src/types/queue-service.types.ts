@@ -32,6 +32,15 @@ export interface QueueServiceConfig {
   eventCallbacks?: QueueServiceEventCallbacks;
 }
 
+export interface RedisServerInfo {
+  version: string;
+  mode: string;
+  usedMemory: string;
+  totalMemory: string;
+  connectedClients: number;
+  maxClients: number;
+}
+
 /**
  * Abstract interface for queue service providers.
  * Implement this interface to add support for different queue systems.
@@ -72,6 +81,9 @@ export interface QueueService {
 
   // Worker operations
   getWorkerCount(queueName: string): Promise<WorkerCount>;
+
+  // Redis server info
+  getRedisInfo(): Promise<RedisServerInfo>;
 
   // Provider capabilities
   getCapabilities(): QueueProviderCapabilities;

@@ -16,6 +16,7 @@ import {
   SidebarProvider,
 } from "@bullstudio/ui/components/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
+import { RedisInfoBar } from "@/components/RedisInfoBar";
 import { Toaster } from "sonner";
 
 import "../styles.css";
@@ -75,6 +76,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset className="overflow-y-auto">
+              <div className="px-6 pt-4">
+                <RedisInfoBar />
+              </div>
               <main className="flex-1 p-6">{children}</main>
             </SidebarInset>
             <Scripts />

@@ -25,6 +25,11 @@ function parseRedisUrl(url: string) {
 }
 
 export const connectionRouter = createTRPCRouter({
+  redisInfo: publicProcedure.query(async () => {
+    const provider = await getQueueProvider();
+    return provider.getRedisInfo();
+  }),
+
   info: publicProcedure.query(async () => {
     const redisUrl = getRedisUrl();
     const parsed = parseRedisUrl(redisUrl);

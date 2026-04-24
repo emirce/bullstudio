@@ -7,6 +7,7 @@ import type {
   QueueServiceConfig,
   QueueServiceEventCallbacks,
   QueueProviderCapabilities,
+  RedisServerInfo,
 } from "../../types";
 import type {
   Job,
@@ -20,7 +21,22 @@ import type {
 import { NotConnectedError, JobNotFoundError } from "../../errors";
 import { getProviderCapabilities } from "../../types";
 
-const DEFAULT_PREFIX = "bull";
+const DEFAULT_PREFIX = "{bullmq}";
+
+function parseRedisInfo(raw: string): RedisServerInfo {
+  const get = (key: string) => {
+    const match = raw.match(new RegExp(`^${key}:(.+)$`, "m"));
+    return match?.[1]?.trim() ?? "";
+  };
+  return {
+    version: get("redis_version"),
+    mode: get("redis_mode") || "standalone",
+    usedMemory: get("used_memory_human"),
+    totalMemory: get("total_system_memory_human"),
+    connectedClients: parseInt(get("connected_clients") || "0", 10),
+    maxClients: parseInt(get("maxclients") || "0", 10),
+  };
+}
 
 // Bull-specific job states (no prioritized, no waiting-children, no paused per-job)
 type BullJobStatus = "waiting" | "active" | "completed" | "failed" | "delayed";
@@ -45,6 +61,12 @@ export class BullProvider implements QueueService {
 
   getCapabilities(): QueueProviderCapabilities {
     return getProviderCapabilities("bull");
+  }
+
+  async getRedisInfo(): Promise<RedisServerInfo> {
+    if (!this.connection) throw new NotConnectedError();
+    const raw = await this.connection.info();
+    return parseRedisInfo(raw);
   }
 
   async connect(): Promise<void> {

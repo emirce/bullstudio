@@ -12,6 +12,7 @@ export type {
   QueueServiceConfig,
   QueueServiceEventCallbacks,
   QueueService,
+  RedisServerInfo,
 } from "./queue-service.types";
 
 export type { QueueProviderCapabilities } from "./provider-capabilities.types";
