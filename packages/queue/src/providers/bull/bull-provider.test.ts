@@ -64,6 +64,21 @@ describe("BullProvider (multi-prefix)", () => {
     );
   });
 
+  it("discovers queues when the configured prefix contains colons", async () => {
+    seeded.push(
+      await seedBullQueue({ prefix: "tenant:bull", name: "email" }),
+    );
+
+    await withBullProvider(
+      { prefixes: ["tenant:bull"] },
+      async (provider) => {
+        const queues = await provider.getQueues();
+        expect(queues).toHaveLength(1);
+        expect(queues[0]).toMatchObject({ name: "email", prefix: "tenant:bull" });
+      },
+    );
+  });
+
   it("auto-discovers prefixes from Bull :id marker keys", async () => {
     seeded.push(
       await seedBullQueue({ prefix: "stage", name: "q-s" }),

@@ -19,6 +19,7 @@ import type {
 } from "@bullstudio/connect-types";
 import { NotConnectedError, JobNotFoundError } from "../../errors";
 import { discoverPrefixes } from "../../detection/prefix-discovery";
+import { parseQueueNameFromKey } from "../redis-key";
 
 const DEFAULT_PREFIX = "bull";
 
@@ -572,8 +573,11 @@ export class BullMqProvider implements QueueService {
           );
         cursor = next;
         for (const key of keys) {
-          const parts = key.split(":");
-          const name = parts[1] ?? "";
+          const name = parseQueueNameFromKey(
+            key,
+            prefix,
+            "meta",
+          );
           if (!name) continue;
           const composite =
             this.queueKey(prefix, name);
