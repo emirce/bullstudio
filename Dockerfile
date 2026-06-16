@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 RUN apk update
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
