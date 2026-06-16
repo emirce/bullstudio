@@ -37,7 +37,7 @@
     "lucide-react": "^0.544.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "recharts": "2.15.4",
+    "recharts": "3.8.1",
     "sonner": "^2.0.7",
     "superjson": "^2.2.2",
     "tailwind-merge": "^3.0.2",
