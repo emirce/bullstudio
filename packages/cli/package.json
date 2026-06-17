@@ -54,7 +54,7 @@
     "bull": "^4.16.4",
     "bullmq": "^5.34.8",
     "ioredis": "^5.4.2",
-    "open": "^10.1.0"
+    "open": "^11.0.0"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
