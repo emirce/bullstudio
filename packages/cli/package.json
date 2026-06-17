@@ -52,15 +52,15 @@
   },
   "dependencies": {
     "bull": "^4.16.4",
-    "bullmq": "^5.34.8",
-    "ioredis": "^5.4.2",
+    "bullmq": "^5.78.1",
+    "ioredis": "^5.11.1",
     "open": "^10.1.0"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
     "@types/node": "^22.10.2",
-    "esbuild": "^0.24.0",
-    "tsx": "^4.20.6",
+    "esbuild": "^0.28.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.7.2"
   }
 }

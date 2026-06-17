@@ -21,17 +21,17 @@
     "@bullstudio/connect-types": "workspace:*",
     "@bullstudio/embedded-core": "workspace:*",
     "@bullstudio/private-router": "workspace:*",
-    "@hono/node-server": "^2.0.4",
-    "@trpc/server": "^11.4.3",
+    "@hono/node-server": "^2.0.5",
+    "@trpc/server": "^11.17.0",
     "bull": "^4.16.4",
-    "bullmq": "^5.34.8",
-    "hono": "^4.12.23",
-    "ioredis": "^5.4.2"
+    "bullmq": "^5.78.1",
+    "hono": "^4.12.25",
+    "ioredis": "^5.11.1"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
     "@types/node": "^22.10.2",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.1",
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"
   }

@@ -14,22 +14,22 @@
   "dependencies": {
     "@bullstudio/bullmq-adapter": "workspace:*",
     "@bullstudio/nestjs": "workspace:*",
-    "@nestjs/common": "^11.1.24",
-    "@nestjs/core": "^11.1.24",
-    "@nestjs/platform-express": "^11.1.24",
-    "@nestjs/platform-fastify": "^11.1.24",
-    "bullmq": "^5.34.8",
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@nestjs/platform-express": "^11.1.27",
+    "@nestjs/platform-fastify": "^11.1.27",
+    "bullmq": "^5.78.1",
     "express": "^5.0.0",
     "fastify": "^5.0.0",
-    "ioredis": "^5.4.2",
+    "ioredis": "^5.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
     "@types/node": "^24.10.1",
-    "esbuild": "^0.24.0",
-    "tsx": "^4.20.6",
+    "esbuild": "^0.28.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.7.3"
   }
 }

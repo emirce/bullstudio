@@ -49,9 +49,9 @@
   },
   "dependencies": {
     "@bullstudio/connect-types": "workspace:*",
-    "@trpc/server": "^11.4.3",
+    "@trpc/server": "^11.17.0",
     "superjson": "^2.2.2",
-    "zod": "^4.1.11"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@bullstudio/private-router": "workspace:*",
