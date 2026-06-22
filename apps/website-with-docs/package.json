@@ -20,7 +20,7 @@
     "fumadocs-ui": "16.10.5",
     "isbot": "^5.1.43",
     "lucide-react": "^1.20.0",
-    "posthog-js": "^1.391.3",
+    "posthog-js": "^1.391.7",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router": "^7.15.1",
