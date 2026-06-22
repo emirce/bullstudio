@@ -17,11 +17,11 @@
     "check": "biome lint ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.4",
+    "@biomejs/biome": "2.5.0",
     "@bullstudio/typescript-config": "workspace:*",
     "@changesets/cli": "^2.31.0",
     "tsup": "^8.5.1",
-    "turbo": "^2.6.3",
+    "turbo": "^2.9.18",
     "typescript": "5.7.3"
   },
   "pnpm": {
@@ -38,7 +38,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@types/dagre": "^0.7.53",
+    "@types/dagre": "^0.7.54",
     "dagre": "^0.8.5"
   }
 }

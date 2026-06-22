@@ -29,7 +29,7 @@
     "provenance": true
   },
   "dependencies": {
-    "dayjs": "^1.11.19"
+    "dayjs": "^1.11.21"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",

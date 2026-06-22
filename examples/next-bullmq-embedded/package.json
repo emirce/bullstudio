@@ -12,20 +12,20 @@
   "dependencies": {
     "@bullstudio/bullmq-adapter": "workspace:*",
     "@bullstudio/next": "workspace:*",
-    "@trpc/server": "^11.4.3",
-    "bullmq": "^5.34.8",
-    "ioredis": "^5.4.2",
-    "next": "^16.0.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "@trpc/server": "^11.18.0",
+    "bullmq": "^5.79.1",
+    "ioredis": "^5.11.1",
+    "next": "^16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "superjson": "^2.2.2",
-    "zod": "^4.1.11"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
     "@types/node": "^24.10.1",
-    "@types/react": "19.1.9",
-    "@types/react-dom": "19.1.7",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "typescript": "^5.7.3"
   }
 }
