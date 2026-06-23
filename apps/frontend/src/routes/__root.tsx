@@ -18,6 +18,7 @@ import appCss from "../styles.css?url";
 
 import "../styles.css";
 import { PollingProvider } from "@/components/PollingProvider";
+import { QueueSearchProvider } from "@/components/QueueSearchProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 interface MyRouterContext {
@@ -75,14 +76,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           {isLogin ? (
             children
           ) : (
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset className="h-svh overflow-hidden">
-                <main className="flex flex-1 flex-col overflow-y-auto p-6">
-                  {children}
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
+            <QueueSearchProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset className="h-svh overflow-hidden">
+                  <main className="flex flex-1 flex-col overflow-y-auto p-6">
+                    {children}
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+            </QueueSearchProvider>
           )}
           <Toaster theme="dark" position="bottom-right" richColors />
         </PollingProvider>
