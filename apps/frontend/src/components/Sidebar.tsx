@@ -16,15 +16,7 @@ import {
 import { cn } from "@bullstudio/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
-import {
-  Database,
-  Github,
-  LayoutDashboard,
-  LogOut,
-  Search,
-  Twitter,
-  X,
-} from "lucide-react";
+import { Database, LayoutDashboard, LogOut, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { JobDistributionPie } from "@/components/overview/JobDistributionPie";
 import { usePolling } from "@/components/PollingProvider";

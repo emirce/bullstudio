@@ -64,6 +64,12 @@ function RootComponent() {
   );
 }
 
+/**
+ * App shell: theme, polling, and queue-search providers wrap the sidebar and
+ * the routed content. The login route renders bare, without the shell.
+ *
+ * @param children - Routed page content rendered inside the shell.
+ */
 function RootDocument({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isLogin = location.pathname === "/login";
