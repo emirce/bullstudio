@@ -17,11 +17,11 @@
     "check": "biome lint ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.0",
+    "@biomejs/biome": "2.5.1",
     "@bullstudio/typescript-config": "workspace:*",
     "@changesets/cli": "^2.31.0",
     "tsup": "^8.5.1",
-    "turbo": "^2.9.18",
+    "turbo": "^2.10.0",
     "typescript": "5.7.3"
   },
   "pnpm": {
