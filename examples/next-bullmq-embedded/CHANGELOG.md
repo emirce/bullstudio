@@ -1,5 +1,13 @@
 # @bullstudio/example-next-bullmq-embedded
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [0765b1e]
+  - @bullstudio/next@2.3.0
+  - @bullstudio/bullmq-adapter@2.3.0
+
 ## 0.0.4
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/bull-adapter",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Bull queue adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",

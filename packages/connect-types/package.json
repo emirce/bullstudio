@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/connect-types",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Shared TypeScript contracts for Bullstudio queue adapter authors.",
   "type": "module",
   "license": "MIT",

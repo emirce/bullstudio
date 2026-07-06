@@ -1,5 +1,13 @@
 # @bullstudio/connect-types
 
+## 2.3.0
+
+### Minor Changes
+
+- 0765b1e: Add queue filtering by name and prefix to the dashboard overview and sidebar.
+
+  Also harden transitive dependency versions for known security advisories and move CLI asset copying into a Node script so the build works consistently across shells.
+
 ## 2.2.0
 
 ## 2.1.0
