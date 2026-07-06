@@ -1,4 +1,5 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Queue logo</title>
   <rect x="8" y="10" width="48" height="44" rx="10" fill="#111827"/>
   <path d="M20 24H44" stroke="white" stroke-width="4" stroke-linecap="round"/>
   <path d="M20 34H38" stroke="#A7F3D0" stroke-width="4" stroke-linecap="round"/>
