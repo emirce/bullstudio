@@ -28,8 +28,10 @@ import { QueueCard } from "@/components/overview/QueueCard";
 import { SlowestJobsTable } from "@/components/overview/SlowestJobsTable";
 import { ThroughputChart } from "@/components/overview/ThroughputChart";
 import { usePolling } from "@/components/PollingProvider";
+import { useQueueSearch } from "@/components/QueueSearchProvider";
 import { useTRPC } from "@/integrations/trpc/react";
 import { queueRouteParam } from "@/lib/queue-key";
+import { queueMatchesQuery } from "@/lib/queue-search";
 import { TIME_RANGES } from "@/lib/time-ranges";
 
 export const Route = createFileRoute("/")({ component: OverviewPage });
@@ -76,6 +78,7 @@ function OverviewPage() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { enabled: pollEnabled, interval: pollInterval } = usePolling();
+  const { query } = useQueueSearch();
   const [timeRange, setTimeRange] = useState<number>(5 / 60);
 
   const isFetching = useIsFetching() > 0;
@@ -135,10 +138,17 @@ function OverviewPage() {
     { ...EMPTY_COUNTS },
   );
 
+  // The queue grid honors the shared search term (name or prefix); the
+  // aggregate snapshot and performance metrics above stay global.
+  const filteredQueues = queueList.filter((queue) =>
+    queueMatchesQuery(queue, query),
+  );
+  const noMatches = query.trim().length > 0 && filteredQueues.length === 0;
+
   // Bucket queues by prefix, preserving backend order. When more than one
   // prefix exists each becomes its own labelled section (mirrors the sidebar).
-  const queuesByPrefix = new Map<string, typeof queueList>();
-  for (const queue of queueList) {
+  const queuesByPrefix = new Map<string, typeof filteredQueues>();
+  for (const queue of filteredQueues) {
     const bucket = queuesByPrefix.get(queue.prefix ?? "");
     if (bucket) {
       bucket.push(queue);
@@ -162,7 +172,7 @@ function OverviewPage() {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <header className="flex h-14 shrink-0 items-center gap-2">
         <div className="flex flex-col">
           <h1 className="text-lg font-semibold text-foreground">Overview</h1>
@@ -212,6 +222,10 @@ function OverviewPage() {
                 <Skeleton key={key} className="h-32 w-full bg-zinc-800/50" />
               ))}
             </div>
+          ) : noMatches ? (
+            <p className="py-4 text-sm text-muted-foreground">
+              No queues match “{query.trim()}”.
+            </p>
           ) : hasMultiplePrefixes ? (
             <div className="space-y-6">
               {Array.from(queuesByPrefix, ([prefix, prefixQueues]) => (
@@ -227,7 +241,7 @@ function OverviewPage() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {queueList.map(renderQueueCard)}
+              {filteredQueues.map(renderQueueCard)}
             </div>
           )}
         </section>

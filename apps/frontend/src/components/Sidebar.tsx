@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@bullstudio/ui/components/input";
 import {
   Sidebar,
   SidebarContent,
@@ -15,14 +16,16 @@ import {
 import { cn } from "@bullstudio/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Database, LayoutDashboard, LogOut } from "lucide-react";
+import { Database, LayoutDashboard, LogOut, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { JobDistributionPie } from "@/components/overview/JobDistributionPie";
 import { usePolling } from "@/components/PollingProvider";
+import { useQueueSearch } from "@/components/QueueSearchProvider";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import { VERSION } from "@/const";
 import { useTRPC } from "@/integrations/trpc/react";
 import { queueRouteParam } from "@/lib/queue-key";
+import { queueMatchesQuery } from "@/lib/queue-search";
 import { getQueueSourceViewModel } from "@/lib/queue-source-status";
 import {
   getAssetUrl,
@@ -92,6 +95,16 @@ export function AppSidebar() {
   const dashboardLogo = dashboardIdentity?.logo;
   const dashboardTitle = dashboardIdentity?.title ?? "bullstudio";
   const { enabled: pollEnabled, interval: pollInterval } = usePolling();
+  const { query, setQuery } = useQueueSearch();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const toggleSearch = () => {
+    setSearchOpen((open) => {
+      // Closing the search clears the active filter.
+      if (open) setQuery("");
+      return !open;
+    });
+  };
 
   const { data: connectionInfo, isError: connectionError } = useQuery(
     // Poll so the connection indicator reflects Redis going down/recovering
@@ -121,12 +134,15 @@ export function AppSidebar() {
   const queues = useQuery(trpc.queues.list.queryOptions());
 
   const queueList = queues.data ?? [];
+  const filteredQueues = queueList.filter((queue) =>
+    queueMatchesQuery(queue, query),
+  );
 
   // Bucket queues by prefix so each Redis prefix can render as its own labelled
   // subsection. Insertion order is preserved (the backend already returns
   // queues grouped by prefix), and queue names are unique within a prefix.
-  const queuesByPrefix = new Map<string, typeof queueList>();
-  for (const queue of queueList) {
+  const queuesByPrefix = new Map<string, typeof filteredQueues>();
+  for (const queue of filteredQueues) {
     const bucket = queuesByPrefix.get(queue.prefix ?? "");
     if (bucket) {
       bucket.push(queue);
@@ -174,24 +190,61 @@ export function AppSidebar() {
     <Sidebar collapsible="none" className="sticky top-0 h-svh border-r-0">
       {/* Header with Logo */}
       <SidebarHeader className="h-16 shrink-0 justify-center border-b border-sidebar-border px-4">
-        <Link to="/" className="flex items-center gap-3">
-          <img
-            src={dashboardLogo?.src ?? getAssetUrl("/logo.svg")}
-            alt={dashboardLogo?.alt ?? "bullstudio"}
-            className="size-8 shrink-0"
-          />
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sm text-sidebar-foreground">
-              {dashboardTitle}
-            </span>
-            <span className="text-[10px] text-sidebar-foreground/55 uppercase tracking-wider">
-              {dashboardIdentity ? "Embedded" : "Standalone"}
-            </span>
-          </div>
-        </Link>
+        <div className="flex items-center justify-between gap-2">
+          <Link to="/" className="flex min-w-0 items-center gap-3">
+            <img
+              src={dashboardLogo?.src ?? getAssetUrl("/logo.svg")}
+              alt={dashboardLogo?.alt ?? "bullstudio"}
+              className="size-8 shrink-0"
+            />
+            <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+              <span className="truncate font-semibold text-sm text-sidebar-foreground">
+                {dashboardTitle}
+              </span>
+              <span className="text-[10px] text-sidebar-foreground/55 uppercase tracking-wider">
+                {dashboardIdentity ? "Embedded" : "Standalone"}
+              </span>
+            </div>
+          </Link>
+          <button
+            type="button"
+            onClick={toggleSearch}
+            aria-label="Search queues"
+            aria-pressed={searchOpen}
+            className={cn(
+              "flex size-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 group-data-[collapsible=icon]:hidden",
+              searchOpen && "bg-sidebar-accent text-sidebar-accent-foreground",
+            )}
+          >
+            <Search className="size-4" />
+          </button>
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
+        {searchOpen && (
+          <div className="px-2 pt-2 group-data-[collapsible=icon]:hidden">
+            <div className="relative">
+              <Input
+                autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Filter queues…"
+                className="h-9 bg-card pr-8 font-mono text-sm"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         {/* Aggregate overview across all queues */}
         <SidebarGroup>
           <SidebarGroupContent>
@@ -213,7 +266,11 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {hasMultiplePrefixes ? (
+        {query.trim() && filteredQueues.length === 0 ? (
+          <div className="px-4 py-3 text-xs text-sidebar-foreground/55 group-data-[collapsible=icon]:hidden">
+            No queues match “{query.trim()}”.
+          </div>
+        ) : hasMultiplePrefixes ? (
           Array.from(queuesByPrefix, ([prefix, prefixQueues]) => (
             <SidebarGroup key={prefix}>
               <SidebarGroupLabel className="font-mono">
@@ -228,7 +285,7 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>Queues</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>{queueList.map(renderQueueItem)}</SidebarMenu>
+              <SidebarMenu>{filteredQueues.map(renderQueueItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
