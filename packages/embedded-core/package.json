@@ -57,7 +57,7 @@
     "@bullstudio/frontend": "workspace:*",
     "@bullstudio/private-router": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.1.0",
     "typescript": "^5.7.3",
     "vitest": "^3.2.6"
   }

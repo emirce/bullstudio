@@ -63,7 +63,7 @@
     "@bullstudio/frontend": "workspace:*",
     "@bullstudio/standalone": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.1.0",
     "esbuild": "^0.28.1",
     "tsx": "^4.23.0",
     "typescript": "^5.7.2"
