@@ -64,7 +64,7 @@
     "@bullstudio/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.2",
     "@turbo/gen": "^2.10.3",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "tailwindcss": "^4.3.2",
