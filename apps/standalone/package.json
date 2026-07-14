@@ -24,8 +24,8 @@
     "@hono/node-server": "^2.0.8",
     "@trpc/server": "^11.18.0",
     "bull": "^4.16.4",
-    "bullmq": "^5.79.2",
-    "hono": "^4.12.27",
+    "bullmq": "^5.80.2",
+    "hono": "^4.12.30",
     "ioredis": "^5.11.1"
   },
   "devDependencies": {
