@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/hono",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Hono framework adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",

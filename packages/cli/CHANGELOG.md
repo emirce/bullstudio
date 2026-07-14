@@ -1,5 +1,11 @@
 # bullstudio
 
+## 2.3.1
+
+### Patch Changes
+
+- c305b8c: Fix standalone tRPC streaming batch responses behind nginx by removing stale transfer framing after buffering the response body.
+
 ## 2.3.0
 
 ### Minor Changes
