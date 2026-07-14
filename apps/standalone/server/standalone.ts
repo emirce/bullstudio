@@ -373,9 +373,13 @@ function toFetchHeaders(
 async function toFrameworkResponse(
   response: Response,
 ): Promise<FrameworkResponse> {
+  const headers = new Headers(response.headers);
+  // The body is buffered below, so the upstream stream framing is stale.
+  headers.delete("transfer-encoding");
+
   return {
     status: response.status,
-    headers: Object.fromEntries(response.headers.entries()),
+    headers: Object.fromEntries(headers.entries()),
     body: await response.text(),
   };
 }

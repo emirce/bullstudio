@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { once } from "node:events";
+import { createConnection } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { serve } from "@hono/node-server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -10,6 +13,79 @@ afterEach(() => {
 });
 
 describe("standalone dashboard parity", () => {
+  it("serves buffered streaming tRPC batches with valid HTTP framing", async () => {
+    vi.doMock("./connection", () => ({
+      disconnectProvider: async () => {},
+      getQueueProvider: async () => ({
+        getCapabilities: () => ({
+          providerType: "bullmq",
+          supportsFlows: true,
+          supportedJobStates: [],
+        }),
+        getPrefixes: async () => ["bull"],
+        getQueues: async () => [],
+        isConnected: () => true,
+      }),
+    }));
+
+    const { createStandaloneApp } = await import("../server/standalone");
+    const app = createStandaloneApp({
+      clientDir: tmpdir(),
+      env: {},
+    });
+    const server = serve({
+      fetch: app.fetch,
+      hostname: "127.0.0.1",
+      port: 0,
+    });
+
+    await once(server, "listening");
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected the standalone test server to use a TCP port.");
+    }
+
+    try {
+      const responseHeaders = await new Promise<string>((resolve, reject) => {
+        const socket = createConnection({
+          host: "127.0.0.1",
+          port: address.port,
+        });
+        let response = "";
+
+        socket.setEncoding("utf8");
+        socket.on("connect", () => {
+          socket.write(
+            "GET /api/trpc/connection.info,queues.list?batch=1 HTTP/1.1\r\n" +
+              `Host: 127.0.0.1:${address.port.toString()}\r\n` +
+              "trpc-accept: application/jsonl\r\n" +
+              "Connection: close\r\n\r\n",
+          );
+        });
+        socket.on("data", (chunk) => {
+          response += chunk;
+          const headersEnd = response.indexOf("\r\n\r\n");
+
+          if (headersEnd !== -1) {
+            socket.destroy();
+            resolve(response.slice(0, headersEnd));
+          }
+        });
+        socket.on("error", reject);
+      });
+      const normalizedHeaders = responseHeaders.toLowerCase();
+
+      expect(responseHeaders).toMatch(/^HTTP\/1\.1 200/);
+      expect(
+        normalizedHeaders.includes("\r\ncontent-length:") &&
+          normalizedHeaders.includes("\r\ntransfer-encoding:"),
+      ).toBe(false);
+    } finally {
+      server.close();
+      await once(server, "close");
+    }
+  });
+
   it("serves root assets, health checks, private API, and production session auth behavior", async () => {
     const { createStandaloneApp } = await import("../server/standalone");
     const clientDir = join(
