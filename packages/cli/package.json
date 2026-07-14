@@ -1,6 +1,6 @@
 {
   "name": "bullstudio",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "A lightweight queue management dashboard for Bull and BullMQ",
   "private": false,
   "type": "module",

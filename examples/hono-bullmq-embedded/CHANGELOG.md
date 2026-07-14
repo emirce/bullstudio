@@ -1,5 +1,12 @@
 # @bullstudio/example-hono-bullmq-embedded
 
+## 0.0.6
+
+### Patch Changes
+
+- @bullstudio/hono@2.3.1
+- @bullstudio/bullmq-adapter@2.3.1
+
 ## 0.0.5
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @bullstudio/bull-adapter
 
+## 2.3.1
+
+### Patch Changes
+
+- @bullstudio/connect-types@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes
