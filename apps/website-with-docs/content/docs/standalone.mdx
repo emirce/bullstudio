@@ -128,6 +128,23 @@ bullstudio -r redis://username:password@redis.example.com:6379
 bullstudio -r rediss://username:password@redis.example.com:6380
 ```
 
+## Redis Cluster
+
+Cluster mode is detected automatically: point `REDIS_URL` at any cluster node
+and Bullstudio connects with a cluster client seeded from that node,
+discovering the rest of the topology itself. Queue and prefix discovery scans
+every master node, so hash-tag prefixes (e.g. `{orders}`) are found wherever
+their slots live.
+
+```bash
+# any node of the cluster works as the seed
+bullstudio -r redis://cluster-node.example.com:6379
+```
+
+BullMQ on a cluster requires hash-tag prefixes (e.g. `{myapp}`) so each
+queue's keys share a slot; queues written without hash tags may not be
+usable on a cluster regardless of the dashboard.
+
 ## Health check
 
 ```bash

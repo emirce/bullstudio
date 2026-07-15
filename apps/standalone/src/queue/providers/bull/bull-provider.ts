@@ -16,7 +16,6 @@ import type {
   WorkerCount,
 } from "@bullstudio/connect-types";
 import Bull from "bull";
-import Redis from "ioredis";
 import { resolveConfiguredPrefixes } from "../../detection/prefix-discovery";
 import { NotConnectedError } from "../../errors";
 import type {
@@ -27,7 +26,12 @@ import type {
   QueueServiceEventCallbacks,
 } from "../../types";
 import { getProviderCapabilities } from "../../types";
-import { redisReconnectStrategy } from "../../utils";
+import {
+  createRedisConnection,
+  type RedisConnection,
+  redisReconnectStrategy,
+  scanMatching,
+} from "../../utils";
 import { parseQueueNameFromKey } from "../redis-key";
 
 const DEFAULT_PREFIX = "bull";
@@ -37,7 +41,7 @@ export class BullProvider implements QueueService {
 
   private readonly config: QueueServiceConfig;
   private readonly eventCallbacks: QueueServiceEventCallbacks;
-  private connection: Redis | null = null;
+  private connection: RedisConnection | null = null;
   private queues = new Map<string, Bull.Queue>();
   private queueAdapters = new Map<string, QueueAdapter>();
   private _isConnected = false;
@@ -106,8 +110,10 @@ export class BullProvider implements QueueService {
       return;
     }
 
-    this.connection = new Redis(this.config.redisUrl, {
-      maxRetriesPerRequest: null,
+    // Cluster mode (detected by the provider factory) connects with a cluster
+    // client seeded from the URL; single-node mode keeps a plain client.
+    this.connection = createRedisConnection(this.config.redisUrl, {
+      cluster: this.config.cluster,
       enableReadyCheck: true,
       lazyConnect: true,
       // Auto-reconnect with backoff so a dropped connection self-heals once
@@ -399,8 +405,8 @@ export class BullProvider implements QueueService {
           if (type === "client") {
             return connection.duplicate();
           }
-          return new Redis(this.config.redisUrl, {
-            maxRetriesPerRequest: null,
+          return createRedisConnection(this.config.redisUrl, {
+            cluster: this.config.cluster,
             enableReadyCheck: true,
             retryStrategy: redisReconnectStrategy,
           });
@@ -429,26 +435,14 @@ export class BullProvider implements QueueService {
     const seen = new Set<string>();
 
     for (const prefix of prefixes) {
-      const pattern = `${prefix}:*:id`;
-      let cursor = "0";
-      do {
-        const [next, keys] = await this.connection.scan(
-          cursor,
-          "MATCH",
-          pattern,
-          "COUNT",
-          100,
-        );
-        cursor = next;
-        for (const key of keys) {
-          const name = parseQueueNameFromKey(key, prefix, "id");
-          if (!name) continue;
-          const composite = this.queueKey(prefix, name);
-          if (seen.has(composite)) continue;
-          seen.add(composite);
-          result.push({ name, prefix });
-        }
-      } while (cursor !== "0");
+      await scanMatching(this.connection, `${prefix}:*:id`, (key) => {
+        const name = parseQueueNameFromKey(key, prefix, "id");
+        if (!name) return;
+        const composite = this.queueKey(prefix, name);
+        if (seen.has(composite)) return;
+        seen.add(composite);
+        result.push({ name, prefix });
+      });
     }
 
     return result;

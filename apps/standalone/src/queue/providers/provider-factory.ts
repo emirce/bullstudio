@@ -5,6 +5,11 @@ import type {
   QueueService,
   QueueServiceConfig,
 } from "../types";
+import {
+  createRedisConnection,
+  isClusterEnabled,
+  type RedisConnection,
+} from "../utils";
 import { BullProvider } from "./bull";
 import { BullMqProvider } from "./bullmq";
 
@@ -12,11 +17,15 @@ import { BullMqProvider } from "./bullmq";
  * Auto-detect and create appropriate queue provider.
  * When `prefixes: ["*"]` is set, discovers all
  * prefixes before detecting the provider type.
+ *
+ * Cluster mode is detected from the target Redis itself (`INFO cluster`) and
+ * recorded on the provider config, so providers connect with a cluster client
+ * and discovery fans out across every master node.
  */
 export async function createQueueProvider(
   config: QueueServiceConfig,
 ): Promise<QueueService> {
-  const redis = new Redis(config.redisUrl, {
+  let redis: RedisConnection = new Redis(config.redisUrl, {
     maxRetriesPerRequest: null,
     lazyConnect: true,
     retryStrategy: () => null,
@@ -34,6 +43,22 @@ export async function createQueueProvider(
   try {
     await redis.connect();
 
+    const cluster = await isClusterEnabled(redis);
+    if (cluster) {
+      // Prefix and provider detection SCAN the keyspace, and each cluster
+      // node only returns keys for its own slots — swap the single-node
+      // detection client for a cluster client before scanning.
+      await redis.quit().catch(() => {});
+      redis = createRedisConnection(config.redisUrl, {
+        cluster: true,
+        lazyConnect: true,
+        retryStrategy: () => null,
+      });
+      redis.on("error", () => {});
+      await redis.connect();
+      console.log("[ProviderFactory] Redis Cluster detected");
+    }
+
     let prefixes = config.prefixes;
 
     if (prefixes?.includes("*")) {
@@ -48,7 +73,7 @@ export async function createQueueProvider(
       }
     }
 
-    finalConfig = { ...config, prefixes };
+    finalConfig = { ...config, prefixes, cluster };
 
     const detectionPrefix = prefixes?.[0] ?? config.prefix ?? "bull";
     const detection = await detectProvider(redis, detectionPrefix);

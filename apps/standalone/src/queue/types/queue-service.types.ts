@@ -39,6 +39,8 @@ export interface QueueServiceConfig {
   prefix?: string;
   /** Explicit list of prefixes. Use `["*"]` for auto-discovery. */
   prefixes?: string[];
+  /** Connect with a Redis Cluster client (set by provider detection). */
+  cluster?: boolean;
   eventCallbacks?: QueueServiceEventCallbacks;
 }
 
