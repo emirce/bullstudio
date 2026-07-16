@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/express",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Express framework adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",
