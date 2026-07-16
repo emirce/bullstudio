@@ -1,5 +1,15 @@
 # @bullstudio/standalone
 
+## 0.0.8
+
+### Patch Changes
+
+- @bullstudio/bullmq-adapter@2.4.0
+- @bullstudio/bull-adapter@2.4.0
+- @bullstudio/embedded-core@2.4.0
+- @bullstudio/connect-types@2.4.0
+- @bullstudio/private-router@0.0.8
+
 ## 0.0.7
 
 ### Patch Changes
