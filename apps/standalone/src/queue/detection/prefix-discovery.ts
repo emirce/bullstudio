@@ -1,4 +1,4 @@
-import type Redis from "ioredis";
+import { type RedisConnection, scanMatching } from "../utils";
 
 /**
  * Discover all Bull/BullMQ prefixes in a Redis instance
@@ -6,10 +6,12 @@ import type Redis from "ioredis";
  *   - BullMQ: `<prefix>:<queue>:meta`
  *   - Bull:   `<prefix>:<queue>:id`
  *
- * @param redis - Redis client to scan.
+ * @param redis - Redis client to scan (fans out across cluster masters).
  * @returns Every distinct prefix found, sorted alphabetically.
  */
-export async function discoverPrefixes(redis: Redis): Promise<string[]> {
+export async function discoverPrefixes(
+  redis: RedisConnection,
+): Promise<string[]> {
   const prefixes = new Set<string>();
   // Strip the trailing `:<queue>:<suffix>` to recover the full prefix, which
   // may itself contain colons (e.g. a Redis Cluster hash tag like
@@ -21,8 +23,8 @@ export async function discoverPrefixes(redis: Redis): Promise<string[]> {
     return parts.slice(0, -2).join(":") || null;
   };
 
-  await scanForPattern(redis, "*:*:meta", prefixOf, prefixes);
-  await scanForPattern(redis, "*:*:id", prefixOf, prefixes);
+  await collectPrefixes(redis, "*:*:meta", prefixOf, prefixes);
+  await collectPrefixes(redis, "*:*:id", prefixOf, prefixes);
 
   return Array.from(prefixes).sort();
 }
@@ -44,7 +46,7 @@ export async function discoverPrefixes(redis: Redis): Promise<string[]> {
  * @returns The concrete prefixes to query, de-duplicated and sorted.
  */
 export async function resolveConfiguredPrefixes(
-  redis: Redis,
+  redis: RedisConnection,
   configured: string[] | undefined,
   defaultPrefix: string,
 ): Promise<string[]> {
@@ -79,20 +81,20 @@ export async function resolveConfiguredPrefixes(
  * — `{` and `}` are literal in Redis glob matching, only `*` is a wildcard —
  * and derives each key's prefix from the pattern.
  *
- * @param redis - Redis client to scan.
+ * @param redis - Redis client to scan (fans out across cluster masters).
  * @param pattern - Glob prefix pattern, e.g. `local:{*}`.
  * @returns The concrete prefixes matching the pattern, sorted alphabetically.
  */
 export async function discoverPrefixesMatching(
-  redis: Redis,
+  redis: RedisConnection,
   pattern: string,
 ): Promise<string[]> {
   const prefixes = new Set<string>();
   const matcher = prefixPatternToRegExp(pattern);
   const extractPrefix = (key: string) => matcher.exec(key)?.[0] ?? null;
 
-  await scanForPattern(redis, `${pattern}:*:meta`, extractPrefix, prefixes);
-  await scanForPattern(redis, `${pattern}:*:id`, extractPrefix, prefixes);
+  await collectPrefixes(redis, `${pattern}:*:meta`, extractPrefix, prefixes);
+  await collectPrefixes(redis, `${pattern}:*:id`, extractPrefix, prefixes);
 
   return Array.from(prefixes).sort();
 }
@@ -113,46 +115,23 @@ export function prefixPatternToRegExp(pattern: string): RegExp {
   return new RegExp(`^${escaped}`);
 }
 
-const MAX_SCAN_ITERATIONS = 10_000;
-
 /**
- * SCAN Redis for keys matching `pattern`, collecting each key's prefix (via
- * `extractPrefix`) into `out`. Iterates the full cursor, bounded by
- * MAX_SCAN_ITERATIONS as a runaway guard.
+ * SCAN for keys matching `pattern`, collecting each key's prefix (via
+ * `extractPrefix`) into `out`.
  *
- * @param redis - Redis client to scan.
+ * @param redis - Redis client to scan (fans out across cluster masters).
  * @param pattern - Redis glob MATCH pattern.
  * @param extractPrefix - Maps a matched key to its prefix, or `null` to skip it.
  * @param out - Set accumulating the discovered prefixes (mutated in place).
  */
-async function scanForPattern(
-  redis: Redis,
+async function collectPrefixes(
+  redis: RedisConnection,
   pattern: string,
   extractPrefix: (key: string) => string | null,
   out: Set<string>,
 ): Promise<void> {
-  let cursor = "0";
-  let iterations = 0;
-  do {
-    const [next, keys] = await redis.scan(
-      cursor,
-      "MATCH",
-      pattern,
-      "COUNT",
-      200,
-    );
-    cursor = next;
-    for (const key of keys) {
-      const prefix = extractPrefix(key);
-      if (prefix) out.add(prefix);
-    }
-    iterations++;
-    if (iterations >= MAX_SCAN_ITERATIONS) {
-      console.warn(
-        `[PrefixDiscovery] Stopped after ` +
-          `${MAX_SCAN_ITERATIONS} iterations`,
-      );
-      break;
-    }
-  } while (cursor !== "0");
+  await scanMatching(redis, pattern, (key) => {
+    const prefix = extractPrefix(key);
+    if (prefix) out.add(prefix);
+  });
 }

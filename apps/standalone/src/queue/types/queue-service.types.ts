@@ -39,6 +39,8 @@ export interface QueueServiceConfig {
   prefix?: string;
   /** Explicit list of prefixes. Use `["*"]` for auto-discovery. */
   prefixes?: string[];
+  /** Connect with a Redis Cluster client (set by provider detection). */
+  cluster?: boolean;
   eventCallbacks?: QueueServiceEventCallbacks;
 }
 
@@ -49,6 +51,8 @@ export interface QueueServiceConfig {
 export interface QueueService {
   /** Provider type identifier */
   readonly providerType: QueueProviderType;
+  /** Whether standalone mode detected Redis Cluster topology. */
+  readonly cluster: boolean;
 
   /** Establish connection to the queue backend */
   connect(): Promise<void>;

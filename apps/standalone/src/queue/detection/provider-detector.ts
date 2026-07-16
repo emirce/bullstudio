@@ -1,5 +1,5 @@
-import type Redis from "ioredis";
 import type { QueueProviderType } from "../types";
+import { type RedisConnection, scanMatching } from "../utils";
 
 export interface ProviderDetectionResult {
   type: QueueProviderType;
@@ -12,23 +12,18 @@ export interface ProviderDetectionResult {
  *
  * BullMQ uses: bull:queueName:meta (metadata keys)
  * Bull uses: bull:queueName:id (direct job ID counter)
+ *
+ * On a cluster every master node is sampled, since each node only holds the
+ * keys for its own slots.
  */
 export async function detectProvider(
-  redis: Redis,
+  redis: RedisConnection,
   prefix: string = "bull",
 ): Promise<ProviderDetectionResult> {
   try {
     // Check for BullMQ meta keys (bull:*:meta)
     const metaPattern = `${prefix}:*:meta`;
-    const [, metaKeys] = await redis.scan(
-      "0",
-      "MATCH",
-      metaPattern,
-      "COUNT",
-      100,
-    );
-
-    if (metaKeys.length > 0) {
+    if (await anyKeyMatches(redis, metaPattern)) {
       return {
         type: "bullmq",
         confidence: "high",
@@ -38,9 +33,7 @@ export async function detectProvider(
 
     // Check for Bull id keys (bull:*:id)
     const idPattern = `${prefix}:*:id`;
-    const [, idKeys] = await redis.scan("0", "MATCH", idPattern, "COUNT", 100);
-
-    if (idKeys.length > 0) {
+    if (await anyKeyMatches(redis, idPattern)) {
       return {
         type: "bull",
         confidence: "high",
@@ -65,4 +58,23 @@ export async function detectProvider(
       detectedFrom: "default",
     };
   }
+}
+
+/**
+ * True when any scan target contains a key matching `pattern`.
+ */
+async function anyKeyMatches(
+  redis: RedisConnection,
+  pattern: string,
+): Promise<boolean> {
+  let found = false;
+  await scanMatching(
+    redis,
+    pattern,
+    () => {
+      found = true;
+    },
+    { stopAfterFirstMatch: true },
+  );
+  return found;
 }

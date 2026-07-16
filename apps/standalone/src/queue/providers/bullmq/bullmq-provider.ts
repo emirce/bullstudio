@@ -16,7 +16,6 @@ import type {
   WorkerCount,
 } from "@bullstudio/connect-types";
 import { Queue } from "bullmq";
-import Redis from "ioredis";
 import { resolveConfiguredPrefixes } from "../../detection/prefix-discovery";
 import { NotConnectedError } from "../../errors";
 import type {
@@ -27,23 +26,30 @@ import type {
   QueueServiceEventCallbacks,
 } from "../../types";
 import { getProviderCapabilities } from "../../types";
-import { redisReconnectStrategy } from "../../utils";
+import {
+  createRedisConnection,
+  type RedisConnection,
+  redisReconnectStrategy,
+  scanMatching,
+} from "../../utils";
 import { parseQueueNameFromKey } from "../redis-key";
 
 const DEFAULT_PREFIX = "bull";
 
 export class BullMqProvider implements QueueService {
   readonly providerType: QueueProviderType = "bullmq";
+  readonly cluster: boolean;
 
   private readonly config: QueueServiceConfig;
   private readonly eventCallbacks: QueueServiceEventCallbacks;
-  private connection: Redis | null = null;
+  private connection: RedisConnection | null = null;
   private queues = new Map<string, Queue>();
   private queueAdapters = new Map<string, QueueAdapter>();
   private _isConnected = false;
   private _isReconnecting = false;
 
   constructor(config: QueueServiceConfig) {
+    this.cluster = config.cluster ?? false;
     this.config = {
       prefix: DEFAULT_PREFIX,
       ...config,
@@ -106,8 +112,10 @@ export class BullMqProvider implements QueueService {
       return;
     }
 
-    this.connection = new Redis(this.config.redisUrl, {
-      maxRetriesPerRequest: null,
+    // Cluster mode (detected by the provider factory) connects with a cluster
+    // client seeded from the URL; single-node mode keeps a plain client.
+    this.connection = createRedisConnection(this.config.redisUrl, {
+      cluster: this.config.cluster,
       enableReadyCheck: true,
       lazyConnect: true,
       // Auto-reconnect with backoff so a dropped connection self-heals once
@@ -418,26 +426,14 @@ export class BullMqProvider implements QueueService {
     const seen = new Set<string>();
 
     for (const prefix of prefixes) {
-      const pattern = `${prefix}:*:meta`;
-      let cursor = "0";
-      do {
-        const [next, keys] = await this.connection.scan(
-          cursor,
-          "MATCH",
-          pattern,
-          "COUNT",
-          100,
-        );
-        cursor = next;
-        for (const key of keys) {
-          const name = parseQueueNameFromKey(key, prefix, "meta");
-          if (!name) continue;
-          const composite = this.queueKey(prefix, name);
-          if (seen.has(composite)) continue;
-          seen.add(composite);
-          result.push({ name, prefix });
-        }
-      } while (cursor !== "0");
+      await scanMatching(this.connection, `${prefix}:*:meta`, (key) => {
+        const name = parseQueueNameFromKey(key, prefix, "meta");
+        if (!name) return;
+        const composite = this.queueKey(prefix, name);
+        if (seen.has(composite)) return;
+        seen.add(composite);
+        result.push({ name, prefix });
+      });
     }
 
     return result;
