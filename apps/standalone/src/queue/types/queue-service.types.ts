@@ -51,6 +51,8 @@ export interface QueueServiceConfig {
 export interface QueueService {
   /** Provider type identifier */
   readonly providerType: QueueProviderType;
+  /** Whether standalone mode detected Redis Cluster topology. */
+  readonly cluster: boolean;
 
   /** Establish connection to the queue backend */
   connect(): Promise<void>;

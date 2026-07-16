@@ -27,10 +27,8 @@ import {
   type WorkerListInput,
 } from "@bullstudio/private-router";
 import { TRPCError } from "@trpc/server";
-import { FlowProducer, type JobNode } from "bullmq";
-import { getQueueProvider } from "./connection";
-
-let flowProducer: FlowProducer | null = null;
+import type { FlowProducer, JobNode } from "bullmq";
+import { getFlowProducer, getQueueProvider } from "./connection";
 
 export function createStandaloneQueueSource(): PrivateDashboardQueueSource {
   return {
@@ -714,22 +712,6 @@ function parseFlowJobKey(
   const id = parts.pop() as string;
   const queueName = parts.pop() as string;
   return { prefix: parts.join(":"), queueName, id };
-}
-
-async function getFlowProducer(): Promise<FlowProducer> {
-  if (!flowProducer) {
-    const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-    const producer = new FlowProducer({ connection: { url: redisUrl } });
-    // FlowProducer re-emits Redis connection errors on itself. Without a
-    // listener Node treats an emitted "error" as fatal and crashes the
-    // process when the connection drops, so swallow it here.
-    producer.on("error", (error) => {
-      console.error("[Standalone] FlowProducer error:", error.message);
-    });
-    flowProducer = producer;
-  }
-
-  return flowProducer;
 }
 
 async function getFlowSummary(

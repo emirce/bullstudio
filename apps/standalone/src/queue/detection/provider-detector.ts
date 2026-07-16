@@ -1,5 +1,5 @@
 import type { QueueProviderType } from "../types";
-import { type RedisConnection, scanTargets } from "../utils";
+import { type RedisConnection, scanMatching } from "../utils";
 
 export interface ProviderDetectionResult {
   type: QueueProviderType;
@@ -61,18 +61,20 @@ export async function detectProvider(
 }
 
 /**
- * True when a single SCAN page on any scan target returns a key matching
- * `pattern`. A sample is enough for detection; discovery does the full walk.
+ * True when any scan target contains a key matching `pattern`.
  */
 async function anyKeyMatches(
   redis: RedisConnection,
   pattern: string,
 ): Promise<boolean> {
-  for (const node of scanTargets(redis)) {
-    const [, keys] = await node.scan("0", "MATCH", pattern, "COUNT", 100);
-    if (keys.length > 0) {
-      return true;
-    }
-  }
-  return false;
+  let found = false;
+  await scanMatching(
+    redis,
+    pattern,
+    () => {
+      found = true;
+    },
+    { stopAfterFirstMatch: true },
+  );
+  return found;
 }

@@ -141,9 +141,11 @@ their slots live.
 bullstudio -r redis://cluster-node.example.com:6379
 ```
 
-BullMQ on a cluster requires hash-tag prefixes (e.g. `{myapp}`) so each
-queue's keys share a slot; queues written without hash tags may not be
-usable on a cluster regardless of the dashboard.
+BullMQ requires each queue's keys to share a cluster slot. You can achieve
+this with either a hash-tagged prefix, such as `prefix: "{myprefix}"`, or a
+hash-tagged queue name, such as `new Queue("{cluster}")`. For multiple queues,
+use distinct hash tags or prefixes so their slots can be distributed across
+the cluster's masters.
 
 ## Health check
 

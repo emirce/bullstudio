@@ -38,6 +38,7 @@ const DEFAULT_PREFIX = "bull";
 
 export class BullProvider implements QueueService {
   readonly providerType: QueueProviderType = "bull";
+  readonly cluster: boolean;
 
   private readonly config: QueueServiceConfig;
   private readonly eventCallbacks: QueueServiceEventCallbacks;
@@ -48,6 +49,7 @@ export class BullProvider implements QueueService {
   private _isReconnecting = false;
 
   constructor(config: QueueServiceConfig) {
+    this.cluster = config.cluster ?? false;
     this.config = {
       prefix: DEFAULT_PREFIX,
       ...config,

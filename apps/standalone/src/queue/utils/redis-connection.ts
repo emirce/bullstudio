@@ -118,6 +118,7 @@ export async function scanMatching(
   connection: RedisConnection,
   pattern: string,
   onKey: (key: string) => void,
+  options: { stopAfterFirstMatch?: boolean } = {},
 ): Promise<void> {
   for (const node of scanTargets(connection)) {
     let cursor = "0";
@@ -133,6 +134,9 @@ export async function scanMatching(
       cursor = next;
       for (const key of keys) {
         onKey(key);
+        if (options.stopAfterFirstMatch) {
+          return;
+        }
       }
       iterations++;
       if (iterations >= MAX_SCAN_ITERATIONS) {
