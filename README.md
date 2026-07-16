@@ -38,6 +38,7 @@ Modern, sleek queue dashboard for <a href="https://docs.bullmq.io/">BullMQ</a> a
 - **Flow view** — visualize parent/child job trees and trace dependencies across your flows.
 - **Job control** — retry, promote, remove, and clean jobs; inspect data, logs, and stack traces.
 - **Built-in auth** — protect access with basic authentication or a read-only mode.
+- **Cluster support** — supports single Redis and Cluster.
 - **Docker ready** — run anywhere from the official image, standalone or in a compose stack.
 
 ## Quick start
