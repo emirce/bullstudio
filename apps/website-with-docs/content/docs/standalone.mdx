@@ -37,6 +37,7 @@ bullstudio \
 | `--redis <url>` | `-r` | Redis connection URL. |
 | `--port <port>` | `-p` | HTTP port. |
 | `--prefix <prefixes>` | | Comma-separated Redis key prefixes. Omit to auto-discover. |
+| `--base-path <path>` | | Serve the dashboard under a path prefix (e.g. `/queues`). |
 | `--username <user>` | | Dashboard login username when auth is enabled. |
 | `--password <pass>` | | Enables dashboard login. |
 | `--no-open` | | Do not open the browser automatically. |
@@ -57,6 +58,7 @@ bullstudio
 | `REDIS_URL` | Redis connection URL. |
 | `PORT` | HTTP port. |
 | `REDIS_PREFIX` | Comma-separated Redis key prefixes. |
+| `BULLSTUDIO_BASE_PATH` | Serve the dashboard under a path prefix (e.g. `/queues`). |
 | `BULLSTUDIO_USERNAME` | Login username when `BULLSTUDIO_PASSWORD` is set. |
 | `BULLSTUDIO_PASSWORD` | Enables dashboard login. |
 | `BULLSTUDIO_POLL_ENABLED` | Set to `false` to disable polling entirely. |
@@ -146,6 +148,22 @@ this with either a hash-tagged prefix, such as `prefix: "{myprefix}"`, or a
 hash-tagged queue name, such as `new Queue("{cluster}")`. For multiple queues,
 use distinct hash tags or prefixes so their slots can be distributed across
 the cluster's masters.
+
+## Serve under a path
+
+To expose the dashboard on a path of an existing host (e.g. behind a reverse
+proxy routing `example.com/queues`), set a base path. The UI, its assets, the
+login flow, and the private dashboard API all move under the prefix; requests
+outside it return 404.
+
+```bash
+bullstudio -r redis://localhost:6379 --base-path /queues
+# or: BULLSTUDIO_BASE_PATH=/queues bullstudio -r redis://localhost:6379
+```
+
+Point the proxy route at the server without stripping the prefix. `/health`
+and `/healthz` stay available at the root for container probes and are also
+served under the base path for proxied health checks.
 
 ## Health check
 

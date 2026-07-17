@@ -42,6 +42,10 @@ const { values, positionals } = parseArgs({
       description:
         "Redis key prefix(es), comma-separated (default: auto-discover)",
     },
+    "base-path": {
+      type: "string",
+      description: "Base path to serve the dashboard under (e.g. /queues)",
+    },
     "no-open": {
       type: "boolean",
       description: "Do not open browser automatically",
@@ -66,6 +70,7 @@ Options:
   -r, --redis <url>      Redis connection URL (default: redis://localhost:6379)
   -p, --port <port>      Port to run the server on (default: 4000)
   --prefix <prefixes>    Comma-separated key prefixes (default: auto-discover all)
+  --base-path <path>     Serve the dashboard under a path prefix (e.g. /queues)
   --username <user>      Username for HTTP Basic Auth (default: bullstudio)
   --password <pass>      Password for HTTP Basic Auth
   --no-open              Do not open browser automatically
@@ -91,6 +96,7 @@ const isDev = values.dev;
 const username = values.username;
 const password = values.password;
 const prefixArg = values.prefix;
+const basePathArg = values["base-path"];
 
 // Validate Redis URL
 try {
@@ -161,6 +167,7 @@ if (isDev) {
       PORT: port,
       BULLSTUDIO_CLIENT_DIR: clientDir,
       ...(prefixArg ? { REDIS_PREFIX: prefixArg } : {}),
+      ...(basePathArg ? { BULLSTUDIO_BASE_PATH: basePathArg } : {}),
     },
     stdio: "pipe",
     shell: true,
@@ -179,6 +186,7 @@ if (isDev) {
       BULLSTUDIO_USERNAME: username,
       BULLSTUDIO_PASSWORD: password,
       ...(prefixArg ? { REDIS_PREFIX: prefixArg } : {}),
+      ...(basePathArg ? { BULLSTUDIO_BASE_PATH: basePathArg } : {}),
     },
     stdio: "pipe",
   });
