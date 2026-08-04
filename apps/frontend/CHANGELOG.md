@@ -1,5 +1,11 @@
 # @bullstudio/frontend
 
+## 0.0.9
+
+### Patch Changes
+
+- @bullstudio/private-router@0.0.9
+
 ## 0.0.8
 
 ### Patch Changes
