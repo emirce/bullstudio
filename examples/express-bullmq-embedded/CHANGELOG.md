@@ -1,5 +1,12 @@
 # @bullstudio/example-express-bullmq-embedded
 
+## 0.0.8
+
+### Patch Changes
+
+- @bullstudio/express@2.5.0
+- @bullstudio/bullmq-adapter@2.5.0
+
 ## 0.0.7
 
 ### Patch Changes

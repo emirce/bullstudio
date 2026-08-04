@@ -1,5 +1,11 @@
 # @bullstudio/embedded-core
 
+## 2.5.0
+
+### Patch Changes
+
+- @bullstudio/connect-types@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
