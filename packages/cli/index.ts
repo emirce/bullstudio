@@ -42,6 +42,10 @@ const { values, positionals } = parseArgs({
       description:
         "Redis key prefix(es), comma-separated (default: auto-discover)",
     },
+    "base-path": {
+      type: "string",
+      description: "Base path to serve the dashboard under (e.g. /queues)",
+    },
     "no-open": {
       type: "boolean",
       description: "Do not open browser automatically",
@@ -66,6 +70,7 @@ Options:
   -r, --redis <url>      Redis connection URL (default: redis://localhost:6379)
   -p, --port <port>      Port to run the server on (default: 4000)
   --prefix <prefixes>    Comma-separated key prefixes (default: auto-discover all)
+  --base-path <path>     Serve the dashboard under a path prefix (e.g. /queues)
   --username <user>      Username for HTTP Basic Auth (default: bullstudio)
   --password <pass>      Password for HTTP Basic Auth
   --no-open              Do not open browser automatically
@@ -91,6 +96,7 @@ const isDev = values.dev;
 const username = values.username;
 const password = values.password;
 const prefixArg = values.prefix;
+const basePathArg = values["base-path"];
 
 // Validate Redis URL
 try {
@@ -103,6 +109,20 @@ try {
   process.exit(1);
 }
 
+if (isDev && basePathArg) {
+  console.error(
+    "--base-path is not supported together with --dev: the Vite dev server " +
+      "serves assets directly and does not apply the base path rewrites.",
+  );
+  console.error(
+    "Drop --dev to test base path behavior against a production build, or " +
+      "drop --base-path for local development.",
+  );
+  process.exit(1);
+}
+
+const normalizedBasePath = normalizeBasePath(basePathArg);
+
 console.log(`
 ┌─────────────────────────────────────────────┐
 │                                             │
@@ -111,12 +131,21 @@ console.log(`
 │                                             │
 └─────────────────────────────────────────────┘
 
-Redis:    ${redisUrl}
-Port:     ${port}
-Prefix:   ${prefixArg || "auto-discover"}
-Mode:     ${isDev ? "development" : "production"}
-Auth:     ${password ? `enabled (username: ${username})` : "disabled"}
+Redis:      ${redisUrl}
+Port:       ${port}
+Prefix:     ${prefixArg || "auto-discover"}
+Base path:  ${normalizedBasePath || "/"}
+Mode:       ${isDev ? "development" : "production"}
+Auth:       ${password ? `enabled (username: ${username})` : "disabled"}
 `);
+
+function normalizeBasePath(basePath: string | undefined): string {
+  if (!basePath || basePath === "/") {
+    return "";
+  }
+
+  return `/${basePath.replace(/^\/+|\/+$/g, "")}`;
+}
 
 async function openBrowser(url: string) {
   try {
@@ -179,6 +208,7 @@ if (isDev) {
       BULLSTUDIO_USERNAME: username,
       BULLSTUDIO_PASSWORD: password,
       ...(prefixArg ? { REDIS_PREFIX: prefixArg } : {}),
+      ...(basePathArg ? { BULLSTUDIO_BASE_PATH: basePathArg } : {}),
     },
     stdio: "pipe",
   });
@@ -199,7 +229,7 @@ child.stdout?.on("data", (data: Buffer) => {
       output.includes(`port ${port}`))
   ) {
     serverStarted = true;
-    const url = `http://localhost:${port}`;
+    const url = `http://localhost:${port}${normalizedBasePath}`;
 
     if (shouldOpen) {
       console.log("\nOpening browser...\n");

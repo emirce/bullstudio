@@ -43,6 +43,7 @@ export interface StandaloneAppOptions {
 
 export function createStandaloneApp(options: StandaloneAppOptions): Hono {
   const env = options.env ?? process.env;
+  const basePath = getStandaloneBasePath(env);
   const app = new Hono();
   const protection = getStandaloneProtection(env);
   const polling = getStandalonePolling(env);
@@ -52,7 +53,7 @@ export function createStandaloneApp(options: StandaloneAppOptions): Hono {
   const dashboard = createStandaloneDashboard({
     protection,
     handleDashboardAsset: (request) =>
-      handleDashboardAsset(request, options.clientDir, polling),
+      handleDashboardAsset(request, options.clientDir, polling, basePath),
     mountPrivateDashboardApi: () => ({
       handle: async (request) => {
         if (!getAuthenticatedSession(protection, request).authenticated) {
@@ -86,47 +87,85 @@ export function createStandaloneApp(options: StandaloneAppOptions): Hono {
   });
   const privateDashboardApi = dashboard.mountPrivateDashboardApi();
 
-  app.get("/health", (c) => healthResponse(c, env));
-  app.get("/healthz", (c) => healthResponse(c, env));
+  // Health stays at the root for container probes and is also served under
+  // the base path so proxied health checks work.
+  const healthPaths = basePath
+    ? ["/health", "/healthz", `${basePath}/health`, `${basePath}/healthz`]
+    : ["/health", "/healthz"];
+  for (const path of healthPaths) {
+    app.get(path, (c) => healthResponse(c, env));
+  }
 
-  app.all("/api/auth/*", async (c) =>
+  app.all(`${basePath}/api/auth/*`, async (c) =>
     toHonoResponse(
       await dashboard.handle({
         method: c.req.method,
-        url: c.req.url,
+        url: toMountedUrl(c.req.url, basePath),
         headers: c.req.raw.headers,
         body: await c.req.text(),
-        basePath: "/",
+        basePath: basePath || "/",
       }),
     ),
   );
 
-  app.all("/api/trpc/*", async (c) =>
+  app.all(`${basePath}/api/trpc/*`, async (c) =>
     toHonoResponse(
       await privateDashboardApi.handle({
         method: c.req.method,
-        url: c.req.url,
+        url: toMountedUrl(c.req.url, basePath),
         headers: c.req.raw.headers,
         body: c.req.raw.body,
-        basePath: "/",
+        basePath: basePath || "/",
       }),
     ),
   );
 
-  app.on(["GET", "HEAD"], "*", async (c) =>
-    toHonoResponse(
-      await dashboard.handle({
+  // `${basePath}/*` does not match the bare base path, so register both.
+  app.on(["GET", "HEAD"], basePath ? [basePath, `${basePath}/*`] : ["*"], (c) =>
+    dashboard
+      .handle({
         method: c.req.method,
-        url: c.req.url,
+        url: toMountedUrl(c.req.url, basePath),
         headers: c.req.raw.headers,
-        basePath: "/",
-      }),
-    ),
+        basePath: basePath || "/",
+      })
+      .then(toHonoResponse),
   );
 
   app.notFound((c) => c.text("Not Found", 404));
 
   return app;
+}
+
+/**
+ * Base path the dashboard is served under (e.g. behind a path-routing proxy).
+ * Empty string means the root, preserving default behaviour.
+ */
+export function getStandaloneBasePath(env: StandaloneAppOptions["env"]): string {
+  const raw = env?.BULLSTUDIO_BASE_PATH;
+
+  if (!raw || raw === "/") {
+    return "";
+  }
+
+  return `/${raw.replace(/^\/+|\/+$/g, "")}`;
+}
+
+/** Strip the base path from a request URL so downstream handlers see "/". */
+function toMountedUrl(url: string, basePath: string): string {
+  if (!basePath) {
+    return url;
+  }
+
+  const parsedUrl = new URL(url);
+
+  if (parsedUrl.pathname === basePath) {
+    parsedUrl.pathname = "/";
+  } else if (parsedUrl.pathname.startsWith(`${basePath}/`)) {
+    parsedUrl.pathname = parsedUrl.pathname.slice(basePath.length);
+  }
+
+  return parsedUrl.toString();
 }
 
 function getStandaloneProtection(
@@ -200,6 +239,7 @@ async function handleDashboardAsset(
   request: { method: string; url: string },
   clientDir: string,
   polling: PollingConfig | undefined,
+  basePath: string,
 ): Promise<FrameworkResponse> {
   const pathname = new URL(request.url).pathname;
   const staticFilePath = getStaticFilePath(pathname, clientDir);
@@ -217,6 +257,7 @@ async function handleDashboardAsset(
         staticFilePath,
         cacheControl,
         polling,
+        basePath,
       );
     }
   }
@@ -226,6 +267,7 @@ async function handleDashboardAsset(
     join(clientDir, "index.html"),
     "no-cache",
     polling,
+    basePath,
   );
 }
 
@@ -260,14 +302,18 @@ async function getFileResponse(
   filePath: string,
   cacheControl: string,
   polling: PollingConfig | undefined,
+  basePath: string,
 ): Promise<FrameworkResponse> {
   const ext = extname(filePath);
   const contentType = MIME_TYPES[ext] || "application/octet-stream";
 
-  // HTML is the only asset that carries runtime config, so it's served as a
-  // (possibly rewritten) string. Everything else is streamed as-is.
+  // HTML carries runtime config and base-path rewrites, CSS carries base-path
+  // rewrites, so both are served as strings. Everything else streams as-is.
   if (ext === ".html") {
-    const html = injectRuntimeConfig(await readFile(filePath, "utf8"), polling);
+    const html = rewriteHtmlBasePath(
+      injectRuntimeConfig(await readFile(filePath, "utf8"), polling, basePath),
+      basePath,
+    );
     const headers = {
       "Cache-Control": cacheControl,
       "Content-Length": Buffer.byteLength(html).toString(),
@@ -278,6 +324,25 @@ async function getFileResponse(
       status: 200,
       headers,
       body: method === "HEAD" ? undefined : html,
+    };
+  }
+
+  if (ext === ".css" && basePath) {
+    // Mirrors embedded-core's readAssetFile CSS rewrite
+    const css = (await readFile(filePath, "utf8")).replaceAll(
+      "url(/assets/",
+      `url(${basePath}/assets/`,
+    );
+    const headers = {
+      "Cache-Control": cacheControl,
+      "Content-Length": Buffer.byteLength(css).toString(),
+      "Content-Type": contentType,
+    };
+
+    return {
+      status: 200,
+      headers,
+      body: method === "HEAD" ? undefined : css,
     };
   }
 
@@ -302,18 +367,22 @@ async function getFileResponse(
   };
 }
 
-// Merge env-derived polling config into `window.__BULLSTUDIO__` without
-// clobbering anything the build may have set. Mirrors embedded-core's
+// Merge env-derived config (base path, polling) into `window.__BULLSTUDIO__`
+// without clobbering anything the build may have set. Mirrors embedded-core's
 // escapeScriptJson so the `<` escape keeps the inline script safe.
 function injectRuntimeConfig(
   html: string,
   polling: PollingConfig | undefined,
+  basePath: string,
 ): string {
-  if (!polling) {
+  if (!polling && !basePath) {
     return html;
   }
 
-  const runtimeConfig = JSON.stringify({ polling }).replace(/</g, "\\u003c");
+  const runtimeConfig = JSON.stringify({
+    ...(basePath ? { basePath } : {}),
+    ...(polling ? { polling } : {}),
+  }).replace(/</g, "\\u003c");
   const script = `<script>window.__BULLSTUDIO__=Object.assign({},window.__BULLSTUDIO__,${runtimeConfig});</script>`;
 
   if (html.includes("</head>")) {
@@ -321,6 +390,18 @@ function injectRuntimeConfig(
   }
 
   return `${script}${html}`;
+}
+
+// Mirrors embedded-core's renderDashboardHtml asset rewrites for a base path
+function rewriteHtmlBasePath(html: string, basePath: string): string {
+  if (!basePath) {
+    return html;
+  }
+
+  return html
+    .replaceAll('href="/assets/', `href="${basePath}/assets/`)
+    .replaceAll('src="/assets/', `src="${basePath}/assets/`)
+    .replaceAll('href="/logo.svg"', `href="${basePath}/logo.svg"`);
 }
 
 function toFetchRequest(request: {
