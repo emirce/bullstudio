@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { serve } from "@hono/node-server";
 import { disconnectProvider } from "../src/connection";
-import { createStandaloneApp } from "./standalone";
+import { createStandaloneApp, getStandaloneBasePath } from "./standalone";
 
 export interface StandaloneServerOptions {
   clientDir: string;
@@ -21,6 +21,8 @@ export function startStandaloneServer(options: StandaloneServerOptions) {
     env,
   });
 
+  const basePath = getStandaloneBasePath(env);
+
   const server = serve(
     {
       fetch: app.fetch,
@@ -28,7 +30,7 @@ export function startStandaloneServer(options: StandaloneServerOptions) {
       port,
     },
     () => {
-      console.log(`Server running at http://${host}:${port}`);
+      console.log(`Server running at http://${host}:${port}${basePath}`);
     },
   );
 

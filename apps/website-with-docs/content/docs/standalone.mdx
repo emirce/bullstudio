@@ -165,6 +165,9 @@ Point the proxy route at the server without stripping the prefix. `/health`
 and `/healthz` stay available at the root for container probes and are also
 served under the base path for proxied health checks.
 
+`--base-path` is not supported with `--dev`: the Vite dev server used in
+development mode serves assets directly and does not apply the rewrites.
+
 ## Health check
 
 ```bash

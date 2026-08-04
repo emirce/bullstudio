@@ -141,7 +141,7 @@ export function createStandaloneApp(options: StandaloneAppOptions): Hono {
  * Base path the dashboard is served under (e.g. behind a path-routing proxy).
  * Empty string means the root, preserving default behaviour.
  */
-function getStandaloneBasePath(env: StandaloneAppOptions["env"]): string {
+export function getStandaloneBasePath(env: StandaloneAppOptions["env"]): string {
   const raw = env?.BULLSTUDIO_BASE_PATH;
 
   if (!raw || raw === "/") {

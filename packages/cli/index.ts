@@ -109,6 +109,20 @@ try {
   process.exit(1);
 }
 
+if (isDev && basePathArg) {
+  console.error(
+    "--base-path is not supported together with --dev: the Vite dev server " +
+      "serves assets directly and does not apply the base path rewrites.",
+  );
+  console.error(
+    "Drop --dev to test base path behavior against a production build, or " +
+      "drop --base-path for local development.",
+  );
+  process.exit(1);
+}
+
+const normalizedBasePath = normalizeBasePath(basePathArg);
+
 console.log(`
 ┌─────────────────────────────────────────────┐
 │                                             │
@@ -117,12 +131,21 @@ console.log(`
 │                                             │
 └─────────────────────────────────────────────┘
 
-Redis:    ${redisUrl}
-Port:     ${port}
-Prefix:   ${prefixArg || "auto-discover"}
-Mode:     ${isDev ? "development" : "production"}
-Auth:     ${password ? `enabled (username: ${username})` : "disabled"}
+Redis:      ${redisUrl}
+Port:       ${port}
+Prefix:     ${prefixArg || "auto-discover"}
+Base path:  ${normalizedBasePath || "/"}
+Mode:       ${isDev ? "development" : "production"}
+Auth:       ${password ? `enabled (username: ${username})` : "disabled"}
 `);
+
+function normalizeBasePath(basePath: string | undefined): string {
+  if (!basePath || basePath === "/") {
+    return "";
+  }
+
+  return `/${basePath.replace(/^\/+|\/+$/g, "")}`;
+}
 
 async function openBrowser(url: string) {
   try {
@@ -167,7 +190,6 @@ if (isDev) {
       PORT: port,
       BULLSTUDIO_CLIENT_DIR: clientDir,
       ...(prefixArg ? { REDIS_PREFIX: prefixArg } : {}),
-      ...(basePathArg ? { BULLSTUDIO_BASE_PATH: basePathArg } : {}),
     },
     stdio: "pipe",
     shell: true,
@@ -207,7 +229,7 @@ child.stdout?.on("data", (data: Buffer) => {
       output.includes(`port ${port}`))
   ) {
     serverStarted = true;
-    const url = `http://localhost:${port}`;
+    const url = `http://localhost:${port}${normalizedBasePath}`;
 
     if (shouldOpen) {
       console.log("\nOpening browser...\n");
