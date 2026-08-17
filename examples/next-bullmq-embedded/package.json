@@ -15,17 +15,17 @@
     "@trpc/server": "^11.18.0",
     "bullmq": "^5.79.2",
     "ioredis": "^5.11.1",
-    "next": "^16.2.10",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "next": "^16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "superjson": "^2.2.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
     "@types/node": "^25.9.3",
-    "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
     "typescript": "^5.7.3"
   }
 }
