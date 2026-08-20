@@ -9,23 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as QueuesQueueNameRouteRouteImport } from './routes/queues/$queueName/route'
 import { Route as QueuesQueueNameIndexRouteImport } from './routes/queues/$queueName/index'
-import { Route as QueuesQueueNameWorkersRouteImport } from './routes/queues/$queueName/workers'
-import { Route as QueuesQueueNameSchedulersRouteImport } from './routes/queues/$queueName/schedulers'
-import { Route as QueuesQueueNameJobsRouteImport } from './routes/queues/$queueName/jobs'
 import { Route as QueuesQueueNameFlowsRouteImport } from './routes/queues/$queueName/flows'
+import { Route as QueuesQueueNameJobsRouteImport } from './routes/queues/$queueName/jobs'
+import { Route as QueuesQueueNameSchedulersRouteImport } from './routes/queues/$queueName/schedulers'
+import { Route as QueuesQueueNameWorkersRouteImport } from './routes/queues/$queueName/workers'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QueuesQueueNameRouteRoute = QueuesQueueNameRouteRouteImport.update({
@@ -38,9 +38,14 @@ const QueuesQueueNameIndexRoute = QueuesQueueNameIndexRouteImport.update({
   path: '/',
   getParentRoute: () => QueuesQueueNameRouteRoute,
 } as any)
-const QueuesQueueNameWorkersRoute = QueuesQueueNameWorkersRouteImport.update({
-  id: '/workers',
-  path: '/workers',
+const QueuesQueueNameFlowsRoute = QueuesQueueNameFlowsRouteImport.update({
+  id: '/flows',
+  path: '/flows',
+  getParentRoute: () => QueuesQueueNameRouteRoute,
+} as any)
+const QueuesQueueNameJobsRoute = QueuesQueueNameJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
   getParentRoute: () => QueuesQueueNameRouteRoute,
 } as any)
 const QueuesQueueNameSchedulersRoute =
@@ -49,14 +54,9 @@ const QueuesQueueNameSchedulersRoute =
     path: '/schedulers',
     getParentRoute: () => QueuesQueueNameRouteRoute,
   } as any)
-const QueuesQueueNameJobsRoute = QueuesQueueNameJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
-  getParentRoute: () => QueuesQueueNameRouteRoute,
-} as any)
-const QueuesQueueNameFlowsRoute = QueuesQueueNameFlowsRouteImport.update({
-  id: '/flows',
-  path: '/flows',
+const QueuesQueueNameWorkersRoute = QueuesQueueNameWorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
   getParentRoute: () => QueuesQueueNameRouteRoute,
 } as any)
 
@@ -130,18 +130,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/queues/$queueName': {
@@ -158,18 +158,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueuesQueueNameIndexRouteImport
       parentRoute: typeof QueuesQueueNameRouteRoute
     }
-    '/queues/$queueName/workers': {
-      id: '/queues/$queueName/workers'
-      path: '/workers'
-      fullPath: '/queues/$queueName/workers'
-      preLoaderRoute: typeof QueuesQueueNameWorkersRouteImport
-      parentRoute: typeof QueuesQueueNameRouteRoute
-    }
-    '/queues/$queueName/schedulers': {
-      id: '/queues/$queueName/schedulers'
-      path: '/schedulers'
-      fullPath: '/queues/$queueName/schedulers'
-      preLoaderRoute: typeof QueuesQueueNameSchedulersRouteImport
+    '/queues/$queueName/flows': {
+      id: '/queues/$queueName/flows'
+      path: '/flows'
+      fullPath: '/queues/$queueName/flows'
+      preLoaderRoute: typeof QueuesQueueNameFlowsRouteImport
       parentRoute: typeof QueuesQueueNameRouteRoute
     }
     '/queues/$queueName/jobs': {
@@ -179,11 +172,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueuesQueueNameJobsRouteImport
       parentRoute: typeof QueuesQueueNameRouteRoute
     }
-    '/queues/$queueName/flows': {
-      id: '/queues/$queueName/flows'
-      path: '/flows'
-      fullPath: '/queues/$queueName/flows'
-      preLoaderRoute: typeof QueuesQueueNameFlowsRouteImport
+    '/queues/$queueName/schedulers': {
+      id: '/queues/$queueName/schedulers'
+      path: '/schedulers'
+      fullPath: '/queues/$queueName/schedulers'
+      preLoaderRoute: typeof QueuesQueueNameSchedulersRouteImport
+      parentRoute: typeof QueuesQueueNameRouteRoute
+    }
+    '/queues/$queueName/workers': {
+      id: '/queues/$queueName/workers'
+      path: '/workers'
+      fullPath: '/queues/$queueName/workers'
+      preLoaderRoute: typeof QueuesQueueNameWorkersRouteImport
       parentRoute: typeof QueuesQueueNameRouteRoute
     }
   }

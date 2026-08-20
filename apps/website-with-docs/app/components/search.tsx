@@ -1,7 +1,7 @@
 "use client";
 import { usePostHog } from "@posthog/react";
-import { create } from "@orama/orama";
 import { useDocsSearch } from "fumadocs-core/search/client";
+import { staticClient } from "fumadocs-core/search/client/orama-static";
 import {
   SearchDialog,
   SearchDialogClose,
@@ -16,19 +16,10 @@ import {
 import { useI18n } from "fumadocs-ui/contexts/i18n";
 import { useRef } from "react";
 
-function initOrama() {
-  return create({
-    schema: { _: "string" },
-    language: "english",
-  });
-}
-
 export default function DefaultSearchDialog(props: SharedProps) {
   const { locale } = useI18n();
   const { search, setSearch, query } = useDocsSearch({
-    type: "static",
-    initOrama,
-    locale,
+    client: staticClient({ locale }),
   });
   const posthog = usePostHog();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
