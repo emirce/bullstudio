@@ -1,5 +1,12 @@
 # @bullstudio/fastify
 
+## 2.5.1
+
+### Patch Changes
+
+- 1fbc680: Refresh runtime, build, and development dependencies across the workspace, migrate documentation search to Fumadocs' current static client, and patch vulnerable transitive dependencies.
+  - @bullstudio/embedded-core@2.5.1
+
 ## 2.5.0
 
 ### Patch Changes

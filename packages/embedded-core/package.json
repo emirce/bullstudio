@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/embedded-core",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Shared embedded-mode runtime for Bullstudio framework adapters.",
   "type": "module",
   "license": "MIT",
