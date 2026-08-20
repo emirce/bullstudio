@@ -23,6 +23,12 @@ updates:
       day: "monday"
       time: "09:15"
       timezone: "Europe/Berlin"
+    ignore:
+      # changesets/action v2 requires @changesets/cli v3. Upgrade both
+      # together in a dedicated migration instead of as an action-only bump.
+      - dependency-name: "changesets/action"
+        update-types:
+          - "version-update:semver-major"
     groups:
       github-actions:
         patterns:
