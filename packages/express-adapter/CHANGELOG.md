@@ -1,5 +1,11 @@
 # @bullstudio/express
 
+## 2.5.1
+
+### Patch Changes
+
+- @bullstudio/embedded-core@2.5.1
+
 ## 2.5.0
 
 ### Patch Changes

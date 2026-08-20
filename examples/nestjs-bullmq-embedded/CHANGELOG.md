@@ -1,5 +1,13 @@
 # @bullstudio/example-nestjs-bullmq-embedded
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [1fbc680]
+  - @bullstudio/nestjs@2.5.1
+  - @bullstudio/bullmq-adapter@2.5.1
+
 ## 0.0.8
 
 ### Patch Changes
