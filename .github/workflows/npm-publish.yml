@@ -65,7 +65,7 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
-        
+
       - name: Lint
         run: pnpm lint
 
@@ -77,7 +77,9 @@ jobs:
 
       - name: Create Version Packages PR or publish to npm
         id: changesets
-        uses: changesets/action@v2
+        # v2 requires @changesets/cli v3 and renamed action inputs.
+        # Keep v1 while this repository remains on Changesets CLI v2.
+        uses: changesets/action@v1
         with:
           version: pnpm version-packages
           publish: pnpm release
