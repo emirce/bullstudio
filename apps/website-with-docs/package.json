@@ -14,12 +14,12 @@
   "dependencies": {
     "@posthog/react": "^1.10.3",
     "@react-router/node": "^7.18.2",
-    "fumadocs-core": "16.14.4",
-    "fumadocs-mdx": "15.2.3",
-    "fumadocs-ui": "16.14.4",
+    "fumadocs-core": "16.14.5",
+    "fumadocs-mdx": "15.3.0",
+    "fumadocs-ui": "16.14.5",
     "isbot": "^5.2.1",
-    "lucide-react": "^1.31.0",
-    "posthog-js": "^1.417.0",
+    "lucide-react": "^1.33.0",
+    "posthog-js": "^1.418.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^7.18.2",
@@ -36,6 +36,6 @@
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "vite": "^8.2.1"
+    "vite": "^8.2.2"
   }
 }
