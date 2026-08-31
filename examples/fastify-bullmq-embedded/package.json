@@ -13,7 +13,7 @@
     "@bullstudio/bullmq-adapter": "workspace:*",
     "@bullstudio/fastify": "workspace:*",
     "bullmq": "^5.79.2",
-    "fastify": "^5.12.0",
+    "fastify": "^5.12.1",
     "ioredis": "^5.11.1"
   },
   "devDependencies": {
