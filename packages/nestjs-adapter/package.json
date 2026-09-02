@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/nestjs",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "NestJS framework adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",
