@@ -1,6 +1,7 @@
 import {
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
 } from "@bullstudio/ui/components/sidebar";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -87,6 +88,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <AppSidebar />
                 <SidebarInset className="h-svh overflow-hidden">
                   <main className="flex flex-1 flex-col overflow-y-auto p-6">
+                    <SidebarTrigger className="mb-2 md:hidden" />
                     {children}
                   </main>
                 </SidebarInset>

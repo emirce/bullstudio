@@ -187,7 +187,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="none" className="sticky top-0 h-svh border-r-0">
+    <Sidebar collapsible="icon" className="h-svh border-r-0">
       {/* Header with Logo */}
       <SidebarHeader className="h-16 shrink-0 justify-center border-b border-sidebar-border px-4">
         <div className="flex items-center justify-between gap-2">

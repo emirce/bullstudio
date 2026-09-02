@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -5,6 +6,13 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import { standaloneApiPlugin } from "./dev/standalone-api-plugin";
+
+const cliPackage = JSON.parse(
+  readFileSync(
+    new URL("../../packages/cli/package.json", import.meta.url),
+    "utf8",
+  ),
+) as { version: string };
 
 export default defineConfig(({ mode }) => {
   // The dev-only standalone API (see standalone-api-plugin) reads connection
@@ -21,6 +29,11 @@ export default defineConfig(({ mode }) => {
   return {
     build: {
       outDir: "dist/client",
+    },
+    define: {
+      "import.meta.env.VITE_BULLSTUDIO_VERSION": JSON.stringify(
+        `v${cliPackage.version}`,
+      ),
     },
     plugins: [
       standaloneApiPlugin(),
