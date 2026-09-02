@@ -1,5 +1,12 @@
 # @bullstudio/nestjs
 
+## 2.5.2
+
+### Patch Changes
+
+- @bullstudio/express@2.5.2
+- @bullstudio/fastify@2.5.2
+
 ## 2.5.1
 
 ### Patch Changes

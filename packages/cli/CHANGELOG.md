@@ -1,5 +1,11 @@
 # bullstudio
 
+## 2.5.2
+
+### Patch Changes
+
+- 686d563: Make the dashboard sidebar collapsible on mobile devices using the native shadcn sidebar behavior, and derive the displayed dashboard version from the release package so it stays synchronized with published releases.
+
 ## 2.5.1
 
 ### Patch Changes
