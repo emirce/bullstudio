@@ -1,5 +1,11 @@
 # @bullstudio/adapter-utils
 
+## 0.0.12
+
+### Patch Changes
+
+- @bullstudio/connect-types@2.5.3
+
 ## 0.0.11
 
 ### Patch Changes

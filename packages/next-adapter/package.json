@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/next",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "description": "Next.js App Router framework adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",

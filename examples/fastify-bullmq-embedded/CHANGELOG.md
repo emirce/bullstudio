@@ -1,5 +1,12 @@
 # @bullstudio/example-fastify-bullmq-embedded
 
+## 0.0.11
+
+### Patch Changes
+
+- @bullstudio/fastify@2.5.3
+- @bullstudio/bullmq-adapter@2.5.3
+
 ## 0.0.10
 
 ### Patch Changes

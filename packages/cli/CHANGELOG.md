@@ -1,5 +1,11 @@
 # bullstudio
 
+## 2.5.3
+
+### Patch Changes
+
+- 3d32204: Refresh compatible runtime and development dependencies across the workspace.
+
 ## 2.5.2
 
 ### Patch Changes
