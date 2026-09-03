@@ -1,5 +1,12 @@
 # @bullstudio/hono
 
+## 2.5.3
+
+### Patch Changes
+
+- Updated dependencies [3d32204]
+  - @bullstudio/embedded-core@2.5.3
+
 ## 2.5.2
 
 ### Patch Changes
