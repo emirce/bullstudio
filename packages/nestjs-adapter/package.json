@@ -69,7 +69,7 @@
     "@bullstudio/embedded-core": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
     "@nestjs/common": "^11.1.29",
-    "@nestjs/core": "^11.1.29",
+    "@nestjs/core": "^12.0.1",
     "@nestjs/platform-express": "^11.1.29",
     "@nestjs/platform-fastify": "^11.1.29",
     "@nestjs/testing": "^11.1.29",
