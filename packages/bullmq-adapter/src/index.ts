@@ -167,17 +167,14 @@ export function createBullMqQueueAdapter(
       await job.remove();
     },
     getWorkerCount: async () => {
-      const workers = await queue.getWorkers();
+      const workers = await getCompatibleWorkers(queue);
       return createWorkerCount(queue.name, workers);
     },
     listWorkers: async () => {
       const prefix = getQueuePrefix(queue);
-      const workers = await queue.getWorkers();
+      const workers = await getCompatibleWorkers(queue);
       return workers.map((worker) =>
-        mapRedisClientWorker(worker, queue.name, {
-          prefix,
-          provider: "bullmq",
-        }),
+        mapRedisClientWorker(worker, queue.name, { prefix, provider: "bullmq" }),
       );
     },
     listFlows: async (options) => listFlows(queue, flowProducer, options),
@@ -685,4 +682,28 @@ async function getJobCounts(queue: Queue) {
 
 function getQueuePrefix(queue: Queue): string {
   return queue.opts?.prefix ?? "bull";
+}
+
+// Node BullMQ matches workers by base64(queueName); Bull v3 and the Python/other-language
+// ports register the plain queue name. Match both so cross-implementation workers are found.
+async function getCompatibleWorkers(queue: Queue) {
+  const client = await queue.client;
+  const list = await client.clientList();
+  const prefix = getQueuePrefix(queue);
+  const base64 = Buffer.from(queue.name).toString("base64");
+  const exact = [`${prefix}:${queue.name}`, `${prefix}:${base64}`];
+  const named = exact.map((c) => `${c}:w:`);
+
+  return list
+    .split(/\r?\n/)
+    .map((line) => {
+      const fields: Record<string, string> = {};
+      for (const kv of line.split(" ")) {
+        const i = kv.indexOf("=");
+        if (i !== -1) fields[kv.slice(0, i)] = kv.slice(i + 1);
+      }
+      return fields;
+    })
+    .filter((c) => c.name && (exact.includes(c.name) || named.some((p) => c.name.startsWith(p))))
+    .map((c) => ({ ...c, rawname: c.name, name: queue.name }));
 }
