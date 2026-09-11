@@ -705,5 +705,5 @@ async function getCompatibleWorkers(queue: Queue) {
       return fields;
     })
     .filter((c) => c.name && (exact.includes(c.name) || named.some((p) => c.name.startsWith(p))))
-    .map((c) => ({ ...c, rawname: c.name, name: queue.name }));
+    .map((c) => ({ ...c, rawname: c.name!, name: queue.name }));
 }
