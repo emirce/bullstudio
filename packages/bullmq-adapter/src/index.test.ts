@@ -223,7 +223,11 @@ describe("createBullMqQueueAdapter", () => {
       retryJobs,
       pause: vi.fn<() => Promise<void>>(),
       resume: vi.fn<() => Promise<void>>(),
-      getWorkers: async () => [{}, {}],
+      client: Promise.resolve({
+        clientList: async () =>
+          "id=1 addr=10.0.0.1:5000 fd=8 name=bull:email:w:w1 age=5 idle=1\n" +
+          "id=2 addr=10.0.0.1:5001 fd=9 name=bull:ZW1haWw=:w:w2 age=6 idle=2",
+      }),
       close,
     } as unknown as Queue;
 
@@ -249,29 +253,9 @@ describe("createBullMqQueueAdapter", () => {
       queueName: "email",
       count: 2,
     });
-    await expect(adapter.listWorkers?.()).resolves.toEqual([
-      {
-        id: "bull:email:worker",
-        name: "worker",
-        queueName: "email",
-        prefix: "bull",
-        provider: "bullmq",
-        address: undefined,
-        age: 0,
-        idle: 0,
-        metadata: {},
-      },
-      {
-        id: "bull:email:worker",
-        name: "worker",
-        queueName: "email",
-        prefix: "bull",
-        provider: "bullmq",
-        address: undefined,
-        age: 0,
-        idle: 0,
-        metadata: {},
-      },
+    await expect(adapter.listWorkers?.()).resolves.toMatchObject([
+      { name: "email", queueName: "email", address: "10.0.0.1:5000", age: 5 },
+      { name: "email", queueName: "email", address: "10.0.0.1:5001", age: 6 },
     ]);
 
     expect(queue.pause).toHaveBeenCalledOnce();
@@ -283,26 +267,22 @@ describe("createBullMqQueueAdapter", () => {
     expect(adapter).not.toHaveProperty("disconnect");
   });
 
-  it("maps BullMQ worker client metadata", async () => {
+  it("maps BullMQ worker client metadata and preserves the raw client name", async () => {
     const queue = {
       name: "email",
       opts: { prefix: "production" },
-      getWorkers: async () => [
-        {
-          name: "worker-a",
-          addr: "127.0.0.1:6379",
-          age: "12",
-          idle: "2",
-        },
-      ],
+      client: Promise.resolve({
+        clientList: async () =>
+          "id=42 addr=127.0.0.1:6379 fd=7 name=production:email:w:worker-a age=12 idle=2",
+      }),
     } as unknown as Queue;
 
     const adapter = createBullMqQueueAdapter(queue);
 
     await expect(adapter.listWorkers?.()).resolves.toEqual([
       {
-        id: "production:email:worker-a:127.0.0.1:6379",
-        name: "worker-a",
+        id: "production:email:email:127.0.0.1:6379:7",
+        name: "email",
         queueName: "email",
         prefix: "production",
         provider: "bullmq",
@@ -310,10 +290,13 @@ describe("createBullMqQueueAdapter", () => {
         age: 12,
         idle: 2,
         metadata: {
-          name: "worker-a",
+          id: "42",
           addr: "127.0.0.1:6379",
+          fd: "7",
+          name: "email",
           age: "12",
           idle: "2",
+          rawname: "production:email:w:worker-a",
         },
       },
     ]);
@@ -322,7 +305,10 @@ describe("createBullMqQueueAdapter", () => {
   it("returns an empty BullMQ worker list", async () => {
     const queue = {
       name: "email",
-      getWorkers: async () => [],
+      client: Promise.resolve({
+        clientList: async () =>
+          "id=1 addr=127.0.0.1:6379 fd=5 name=bull:other:w:x age=1 idle=0",
+      }),
     } as unknown as Queue;
 
     const adapter = createBullMqQueueAdapter(queue);
@@ -332,6 +318,100 @@ describe("createBullMqQueueAdapter", () => {
       queueName: "email",
       count: 0,
     });
+  });
+
+  it("matches workers registered with plain and base64 client names", async () => {
+    // Node BullMQ registers `bull:base64(name)`; the Python/Bull ports use the
+    // plain `bull:name`. Both encodings (and their `:w:` named forms) must match,
+    // while similarly-prefixed queues (e.g. `emailish`) must not.
+    const queue = {
+      name: "email",
+      client: Promise.resolve({
+        clientList: async () =>
+          "id=1 addr=1.1.1.1:1 fd=1 name=bull:email age=1 idle=0\n" +
+          "id=2 addr=1.1.1.1:2 fd=2 name=bull:email:w:py age=1 idle=0\n" +
+          "id=3 addr=1.1.1.1:3 fd=3 name=bull:ZW1haWw= age=1 idle=0\n" +
+          "id=4 addr=1.1.1.1:4 fd=4 name=bull:ZW1haWw=:w:node age=1 idle=0\n" +
+          "id=5 addr=1.1.1.1:5 fd=5 name=bull:emailish:w:y age=1 idle=0\n" +
+          "id=6 addr=1.1.1.1:6 fd=6 name=bull:other age=1 idle=0\n" +
+          "id=7 addr=1.1.1.1:7 fd=7 name= age=1 idle=0",
+      }),
+    } as unknown as Queue;
+
+    const adapter = createBullMqQueueAdapter(queue);
+
+    await expect(adapter.getWorkerCount()).resolves.toEqual({
+      queueName: "email",
+      count: 4,
+    });
+
+    const workers = await adapter.listWorkers?.();
+    expect(workers?.map((worker) => worker.metadata.rawname)).toEqual([
+      "bull:email",
+      "bull:email:w:py",
+      "bull:ZW1haWw=",
+      "bull:ZW1haWw=:w:node",
+    ]);
+  });
+
+  it("fans out over Redis Cluster nodes and keeps the node with the most workers", async () => {
+    const queue = {
+      name: "email",
+      client: Promise.resolve({
+        isCluster: true,
+        nodes: () => [
+          {
+            clientList: async () =>
+              "id=1 addr=1.1.1.1:1 fd=1 name=bull:email:w:a age=1 idle=0",
+          },
+          {
+            clientList: async () =>
+              "id=2 addr=1.1.1.1:2 fd=2 name=bull:email:w:a age=1 idle=0\n" +
+              "id=3 addr=1.1.1.1:3 fd=3 name=bull:email:w:b age=1 idle=0",
+          },
+        ],
+      }),
+    } as unknown as Queue;
+
+    const adapter = createBullMqQueueAdapter(queue);
+
+    await expect(adapter.getWorkerCount()).resolves.toEqual({
+      queueName: "email",
+      count: 2,
+    });
+  });
+
+  it("degrades gracefully when Redis blocks the CLIENT command", async () => {
+    const queue = {
+      name: "email",
+      client: Promise.resolve({
+        clientList: async () => {
+          throw new Error("ERR unknown command 'client'");
+        },
+      }),
+    } as unknown as Queue;
+
+    const adapter = createBullMqQueueAdapter(queue);
+
+    await expect(adapter.getWorkerCount()).resolves.toEqual({
+      queueName: "email",
+      count: 1,
+    });
+  });
+
+  it("rethrows unexpected CLIENT LIST errors", async () => {
+    const queue = {
+      name: "email",
+      client: Promise.resolve({
+        clientList: async () => {
+          throw new Error("READONLY You can't write against a read only replica");
+        },
+      }),
+    } as unknown as Queue;
+
+    const adapter = createBullMqQueueAdapter(queue);
+
+    await expect(adapter.getWorkerCount()).rejects.toThrow(/READONLY/);
   });
 
   it("lists and reads BullMQ flows from the supplied queue", async () => {

@@ -167,12 +167,12 @@ export function createBullMqQueueAdapter(
       await job.remove();
     },
     getWorkerCount: async () => {
-      const workers = await queue.getWorkers();
+      const workers = await getCompatibleWorkers(queue);
       return createWorkerCount(queue.name, workers);
     },
     listWorkers: async () => {
       const prefix = getQueuePrefix(queue);
-      const workers = await queue.getWorkers();
+      const workers = await getCompatibleWorkers(queue);
       return workers.map((worker) =>
         mapRedisClientWorker(worker, queue.name, {
           prefix,
@@ -685,4 +685,65 @@ async function getJobCounts(queue: Queue) {
 
 function getQueuePrefix(queue: Queue): string {
   return queue.opts?.prefix ?? "bull";
+}
+
+// BullMQ blocks the CLIENT command on some managed Redis (e.g. GCP MemoryStore);
+// this mirrors BullMQ's own detection so we degrade the same way instead of throwing.
+const clientCommandMessageReg = /ERR unknown command ['`]\s*client\s*['`]/;
+
+// Node BullMQ matches workers by base64(queueName); Bull v3 and the Python/other-language
+// ports register the plain queue name. Match both so cross-implementation workers are found.
+// The cluster fan-out and CLIENT-error handling mirror BullMQ's own `baseGetClients` so we
+// don't regress Redis Cluster or managed-Redis deployments.
+async function getCompatibleWorkers(queue: Queue) {
+  const client = await queue.client;
+  const prefix = getQueuePrefix(queue);
+  const base64 = Buffer.from(queue.name).toString("base64");
+  const exact = [`${prefix}:${queue.name}`, `${prefix}:${base64}`];
+  const named = exact.map((c) => `${c}:w:`);
+  const matches = (name: string | undefined): boolean =>
+    name !== undefined &&
+    (exact.includes(name) || named.some((p) => name.startsWith(p)));
+
+  try {
+    if (client.isCluster && typeof client.nodes === "function") {
+      const clientsPerNode = await Promise.all(
+        client
+          .nodes()
+          .map(async (node) =>
+            parseMatchingWorkers(await node.clientList(), queue.name, matches),
+          ),
+      );
+      return clientsPerNode.reduce(
+        (prev, current) => (prev.length > current.length ? prev : current),
+        [] as ReturnType<typeof parseMatchingWorkers>,
+      );
+    }
+    return parseMatchingWorkers(await client.clientList(), queue.name, matches);
+  } catch (err) {
+    if (!clientCommandMessageReg.test((err as Error).message)) {
+      throw err;
+    }
+    return [{ name: "GCP does not support client list" }];
+  }
+}
+
+function parseMatchingWorkers(
+  list: string,
+  queueName: string,
+  matches: (name: string | undefined) => boolean,
+) {
+  return list
+    .split(/\r?\n/)
+    .map((line) => {
+      const fields: Record<string, string> = {};
+      for (const kv of line.split(" ")) {
+        const i = kv.indexOf("=");
+        if (i !== -1) fields[kv.slice(0, i)] = kv.slice(i + 1);
+      }
+      return fields;
+    })
+    .flatMap((c) =>
+      matches(c.name) ? [{ ...c, rawname: c.name, name: queueName }] : [],
+    );
 }
