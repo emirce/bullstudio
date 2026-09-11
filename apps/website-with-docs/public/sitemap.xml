@@ -2,87 +2,87 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://bullstudio.dev/</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/comparisons</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/configuration</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/development</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded/express</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded/fastify</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded/hono</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded/nestjs</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/embedded/next</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/operating-dashboard</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/queue-adapters</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/standalone</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/docs/troubleshooting</loc>
-    <lastmod>2026-06-01</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/comparisons/bullstudio-vs-arena</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://bullstudio.dev/comparisons/bullstudio-vs-bull-board</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <priority>0.6</priority>
   </url>
 </urlset>

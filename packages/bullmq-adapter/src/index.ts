@@ -704,6 +704,9 @@ async function getCompatibleWorkers(queue: Queue) {
       }
       return fields;
     })
-    .filter((c) => c.name && (exact.includes(c.name) || named.some((p) => c.name.startsWith(p))))
+    .filter((c) => {
+      const name = c.name;
+      return name !== undefined && (exact.includes(name) || named.some((p) => name.startsWith(p)));
+    })
     .map((c) => ({ ...c, rawname: c.name!, name: queue.name }));
 }
