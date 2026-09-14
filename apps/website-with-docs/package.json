@@ -12,14 +12,14 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
-    "@posthog/react": "^1.10.5",
+    "@posthog/react": "^1.10.6",
     "@react-router/node": "^7.18.2",
-    "fumadocs-core": "16.15.6",
+    "fumadocs-core": "16.15.9",
     "fumadocs-mdx": "15.4.0",
-    "fumadocs-ui": "16.15.6",
+    "fumadocs-ui": "16.15.9",
     "isbot": "^5.2.2",
-    "lucide-react": "^1.40.0",
-    "posthog-js": "^1.426.2",
+    "lucide-react": "^1.44.0",
+    "posthog-js": "^1.430.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^7.18.2",
@@ -36,6 +36,6 @@
     "serve": "^14.2.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "vite": "^8.2.2"
+    "vite": "^8.3.0"
   }
 }

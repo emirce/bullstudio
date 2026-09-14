@@ -19,7 +19,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "superjson": "^2.2.2",
-    "zod": "^4.5.4"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
