@@ -1,6 +1,6 @@
 import { llms } from "fumadocs-core/source";
 import { source } from "@/lib/source";
 
-export function loader() {
-  return new Response(llms(source).index());
+export async function loader() {
+  return new Response(await llms(source).index());
 }
