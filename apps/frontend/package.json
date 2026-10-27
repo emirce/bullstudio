@@ -54,7 +54,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.3",
     "@trpc/server": "^11.18.0",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^6.1.1",
