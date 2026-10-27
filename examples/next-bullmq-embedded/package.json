@@ -14,7 +14,7 @@
     "@bullstudio/next": "workspace:*",
     "@trpc/server": "^11.18.0",
     "bullmq": "^5.79.2",
-    "ioredis": "^5.11.1",
+    "ioredis": "^6.0.0",
     "next": "^16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",

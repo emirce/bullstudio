@@ -53,7 +53,7 @@
   "dependencies": {
     "bull": "^4.16.4",
     "bullmq": "^5.79.2",
-    "ioredis": "^5.11.1",
+    "ioredis": "^6.0.0",
     "open": "^11.0.2"
   },
   "devDependencies": {
