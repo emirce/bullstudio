@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/fastify",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "description": "Fastify framework adapter for Bullstudio embedded mode.",
   "type": "module",
   "license": "MIT",
