@@ -1,5 +1,16 @@
 # @bullstudio/standalone
 
+## 0.0.13
+
+### Patch Changes
+
+- Updated dependencies [5ea2e43]
+  - @bullstudio/bullmq-adapter@2.5.4
+  - @bullstudio/bull-adapter@2.5.4
+  - @bullstudio/embedded-core@2.5.4
+  - @bullstudio/connect-types@2.5.4
+  - @bullstudio/private-router@0.0.13
+
 ## 0.0.12
 
 ### Patch Changes

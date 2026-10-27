@@ -1,5 +1,11 @@
 # @bullstudio/hono
 
+## 2.5.4
+
+### Patch Changes
+
+- @bullstudio/embedded-core@2.5.4
+
 ## 2.5.3
 
 ### Patch Changes

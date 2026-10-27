@@ -1,6 +1,6 @@
 {
   "name": "@bullstudio/private-router",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
