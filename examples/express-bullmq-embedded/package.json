@@ -13,7 +13,7 @@
     "@bullstudio/bullmq-adapter": "workspace:*",
     "@bullstudio/express": "workspace:*",
     "bullmq": "^5.79.2",
-    "express": "^5.0.0",
+    "express": "^5.3.0",
     "ioredis": "^5.11.1"
   },
   "devDependencies": {
@@ -21,7 +21,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^25.9.3",
     "esbuild": "^0.28.2",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3"
   }
 }
