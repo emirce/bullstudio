@@ -1,5 +1,12 @@
 # @bullstudio/example-next-bullmq-embedded
 
+## 0.0.13
+
+### Patch Changes
+
+- @bullstudio/next@2.5.5
+- @bullstudio/bullmq-adapter@2.5.5
+
 ## 0.0.12
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # bullstudio
 
+## 2.5.5
+
+### Patch Changes
+
+- 8389bdd: Refresh dependencies and resolve all open security advisories, including fixes in Next.js, Hono, Fastify, undici, dompurify, multer and other transitive packages. The overview's slowest-jobs table no longer emits duplicate React keys when jobs in different queues share an id.
+
 ## 2.5.4
 
 ### Patch Changes
@@ -61,6 +67,7 @@
 ### Patch Changes
 
 - c06b555: Fix dashboard UI fallout from recent dependency upgrades:
+
   - Inline the two sidebar brand icons that lucide-react 1.x dropped
   - Update the chart tooltip/legend prop types for recharts v3's reworked `Tooltip`/`Legend` shapes
 

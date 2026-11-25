@@ -1,5 +1,11 @@
 # @bullstudio/bullmq-adapter
 
+## 2.5.5
+
+### Patch Changes
+
+- @bullstudio/connect-types@2.5.5
+
 ## 2.5.4
 
 ### Patch Changes

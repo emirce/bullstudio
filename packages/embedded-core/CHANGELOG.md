@@ -1,5 +1,12 @@
 # @bullstudio/embedded-core
 
+## 2.5.5
+
+### Patch Changes
+
+- 8389bdd: Refresh dependencies and resolve all open security advisories, including fixes in Next.js, Hono, Fastify, undici, dompurify, multer and other transitive packages. The overview's slowest-jobs table no longer emits duplicate React keys when jobs in different queues share an id.
+  - @bullstudio/connect-types@2.5.5
+
 ## 2.5.4
 
 ### Patch Changes
