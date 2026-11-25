@@ -172,7 +172,7 @@ export function FlowGraph({
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.16 }}
+        fitViewOptions={{ padding: "16%" }}
         minZoom={0.1}
         maxZoom={2}
         defaultEdgeOptions={{

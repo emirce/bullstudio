@@ -12,30 +12,30 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
-    "@posthog/react": "^1.10.5",
-    "@react-router/node": "^7.18.2",
-    "fumadocs-core": "16.15.4",
-    "fumadocs-mdx": "15.4.0",
-    "fumadocs-ui": "16.15.4",
-    "isbot": "^5.2.2",
-    "lucide-react": "^1.37.0",
-    "posthog-js": "^1.422.5",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router": "^7.18.2",
-    "tailwind-merge": "^3.6.0"
+    "@posthog/react": "^1.11.3",
+    "@react-router/node": "^8.5.3",
+    "fumadocs-core": "16.19.7",
+    "fumadocs-mdx": "15.6.4",
+    "fumadocs-ui": "16.19.7",
+    "isbot": "^5.2.4",
+    "lucide-react": "^1.80.0",
+    "posthog-js": "^1.454.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "^8.5.3",
+    "tailwind-merge": "^3.7.1"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.18.2",
-    "@tailwindcss/vite": "^4.3.3",
+    "@react-router/dev": "^8.5.3",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/mdx": "^2.0.14",
-    "@types/node": "^25.9.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/node": "^26.6.10",
+    "@types/react": "19.3.2",
+    "@types/react-dom": "19.3.0",
     "react-router-devtools": "^6.2.3",
-    "serve": "^14.2.6",
-    "tailwindcss": "^4.3.3",
+    "serve": "^14.2.8",
+    "tailwindcss": "^4.3.5",
     "typescript": "^6.0.3",
-    "vite": "^8.2.2"
+    "vite": "^8.3.8"
   }
 }

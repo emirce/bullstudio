@@ -36,9 +36,6 @@ async function getMdxFiles(directory: string, prefix = ""): Promise<string[]> {
 
 export default {
   ssr: false,
-  future: {
-    v8_middleware: true,
-  },
   async prerender({ getStaticPaths }) {
     const paths: string[] = [];
     const excluded: string[] = [];

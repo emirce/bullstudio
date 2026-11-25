@@ -97,7 +97,9 @@ export function SlowestJobsTable({
                 const navigable = Boolean(resolveQueueParam(job));
                 return (
                   <TableRow
-                    key={job.id}
+                    // Job ids are per-queue counters, so the same id appears
+                    // in several queues on the global overview.
+                    key={`${job.queueName}:${job.id}:${job.timestamp}`}
                     className={
                       navigable ? "cursor-pointer hover:bg-muted/60" : undefined
                     }

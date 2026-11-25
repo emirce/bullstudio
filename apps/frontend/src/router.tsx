@@ -19,6 +19,7 @@ export const getRouter = () => {
     // URL stays readable and string-based active-route checks in the sidebar
     // match the live pathname instead of a percent-encoded "%3A%3A".
     pathParamsAllowedCharacters: [":"],
+    // biome-ignore lint/correctness/noComponentHookFactories: getRouter runs once per app start, so Wrap keeps a stable identity; it closes over the query context created above.
     Wrap: (props: { children: React.ReactNode }) => {
       return (
         <TanstackQuery.Provider {...rqContext}>

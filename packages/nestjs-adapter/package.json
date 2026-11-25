@@ -68,17 +68,17 @@
   "devDependencies": {
     "@bullstudio/embedded-core": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
-    "@nestjs/common": "^11.1.29",
-    "@nestjs/core": "^11.1.29",
-    "@nestjs/platform-express": "^11.1.29",
-    "@nestjs/platform-fastify": "^11.1.29",
-    "@nestjs/testing": "^11.1.29",
-    "@types/node": "^25.9.3",
-    "express": "^5.0.0",
-    "fastify": "^5.12.1",
+    "@nestjs/common": "^11.2.12",
+    "@nestjs/core": "^11.2.12",
+    "@nestjs/platform-express": "^11.2.12",
+    "@nestjs/platform-fastify": "^11.2.12",
+    "@nestjs/testing": "^11.2.12",
+    "@types/node": "^26.6.10",
+    "express": "^5.3.0",
+    "fastify": "^5.12.8",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
   }
 }

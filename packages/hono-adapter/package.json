@@ -55,9 +55,9 @@
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/node": "^25.9.3",
-    "hono": "^4.13.5",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "@types/node": "^26.6.10",
+    "hono": "^4.13.22",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
   }
 }

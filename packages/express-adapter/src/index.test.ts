@@ -1,4 +1,5 @@
-import { Readable } from "node:stream";
+import { IncomingMessage } from "node:http";
+import { Socket } from "node:net";
 import type { QueueAdapter } from "@bullstudio/embedded-core";
 import { bullstudio } from "@bullstudio/express";
 import express, { type RequestHandler } from "express";
@@ -283,20 +284,13 @@ function createMockRequest(
   url: string,
   options: ExpressRequestOptions,
 ): express.Request {
-  let bodyRead = false;
-  const request = new Readable({
-    read() {
-      if (bodyRead) {
-        return;
-      }
-
-      bodyRead = true;
-      if (options.body) {
-        this.push(options.body);
-      }
-      this.push(null);
-    },
-  }) as express.Request;
+  // A real IncomingMessage: Express re-parents requests onto its prototype,
+  // and Node >= 24.22 relies on fields its constructor initialises.
+  const request = new IncomingMessage(new Socket()) as express.Request;
+  if (options.body) {
+    request.push(options.body);
+  }
+  request.push(null);
 
   request.method = options.method ?? "GET";
   request.url = url;
