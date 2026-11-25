@@ -10,9 +10,12 @@ vi.mock("bullmq", async (importOriginal) => {
 
   return {
     ...actual,
-    FlowProducer: vi.fn(() => ({
-      getFlow,
-    })),
+    // Class implementation so the adapter can `new` the mock (Vitest 4+).
+    FlowProducer: vi.fn(
+      class {
+        getFlow = getFlow;
+      },
+    ),
   };
 });
 

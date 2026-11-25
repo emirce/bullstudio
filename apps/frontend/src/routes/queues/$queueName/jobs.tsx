@@ -302,7 +302,7 @@ function QueueJobsPage() {
     });
   };
 
-  const SortIcon = ({ field }: { field: JobSortField }) => {
+  const renderSortIcon = (field: JobSortField) => {
     if (sortField !== field) {
       return <ArrowUpDown className="size-3.5 text-zinc-600" />;
     }
@@ -447,7 +447,7 @@ function QueueJobsPage() {
                   >
                     <div className="flex items-center gap-2">
                       Job
-                      <SortIcon field="name" />
+                      {renderSortIcon("name")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -456,7 +456,7 @@ function QueueJobsPage() {
                   >
                     <div className="flex items-center gap-2">
                       Status
-                      <SortIcon field="status" />
+                      {renderSortIcon("status")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -465,7 +465,7 @@ function QueueJobsPage() {
                   >
                     <div className="flex items-center gap-2">
                       Queued At
-                      <SortIcon field="timestamp" />
+                      {renderSortIcon("timestamp")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -474,7 +474,7 @@ function QueueJobsPage() {
                   >
                     <div className="flex items-center justify-end gap-2">
                       Duration
-                      <SortIcon field="duration" />
+                      {renderSortIcon("duration")}
                     </div>
                   </TableHead>
                 </TableRow>

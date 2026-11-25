@@ -51,10 +51,10 @@
     "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
-    "bull": "^4.16.4",
+    "bull": "^4.16.5",
     "bullmq": "^5.79.2",
     "ioredis": "^5.11.1",
-    "open": "^11.0.2"
+    "open": "^11.0.4"
   },
   "devDependencies": {
     "@bullstudio/bull-adapter": "workspace:*",
@@ -63,9 +63,9 @@
     "@bullstudio/frontend": "workspace:*",
     "@bullstudio/standalone": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.6.10",
     "esbuild": "^0.28.2",
-    "tsx": "^4.23.13",
-    "typescript": "^5.7.2"
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   }
 }

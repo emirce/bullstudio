@@ -8,10 +8,5 @@ export default defineConfig({
     hookTimeout: 15_000,
     globals: false,
     fileParallelism: false,
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
   },
 });

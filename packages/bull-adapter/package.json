@@ -56,10 +56,10 @@
   "devDependencies": {
     "@bullstudio/adapter-utils": "workspace:*",
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/node": "^25.9.3",
-    "bull": "^4.16.4",
+    "@types/node": "^26.6.10",
+    "bull": "^4.16.5",
     "ioredis": "^5.11.1",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
   }
 }

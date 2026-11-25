@@ -55,10 +55,10 @@
   },
   "devDependencies": {
     "@bullstudio/typescript-config": "workspace:*",
-    "@types/express": "^5.0.0",
-    "@types/node": "^25.9.3",
-    "express": "^5.0.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.2.6"
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.10",
+    "express": "^5.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
   }
 }
