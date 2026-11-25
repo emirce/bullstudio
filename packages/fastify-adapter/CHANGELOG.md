@@ -1,5 +1,12 @@
 # @bullstudio/fastify
 
+## 2.5.5
+
+### Patch Changes
+
+- Updated dependencies [8389bdd]
+  - @bullstudio/embedded-core@2.5.5
+
 ## 2.5.4
 
 ### Patch Changes
